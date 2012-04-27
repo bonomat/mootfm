@@ -1,6 +1,5 @@
 require 'should'
 io = require('socket.io-client')
-server = require('../test-server')
 
 socketURL = 'http://0.0.0.0:8080'
 
@@ -8,12 +7,22 @@ options =
   transports: ['websockets']
   'force new connection':true
 
-describe "Dummy Test Server", ->
-  before (done) ->
-    done
-  after (done) ->
-    done
-  it "data should be 1", (done) ->
-    client1 = io.connect(socketURL, options)
-    client1.on "count", (data) ->
-      data.number.should.equal(1)
+describe 'Array', () ->
+  describe '#indexOf()', () ->
+    it 'should return -1 when the value is not present', () ->
+      [1,2,3].indexOf(5).should.equal(-1);
+      [1,2,3].indexOf(0).should.equal(-1);
+    
+  
+
+describe 'test dummy server', () ->
+  counter = -1
+  it 'should check if data is 1', (done) ->
+    connection = io.connect(socketURL, options)
+    connection.on "count", (data) ->
+      console.log("got here")
+      console.log data.number
+      counter = data.number
+      counter.should.equal(1)
+    connection.disconnect
+    connection.count
