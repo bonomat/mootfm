@@ -24,6 +24,7 @@ describe "Example test with test server", ->
   it "When two users are connected count should be 2", (done) ->
     client1 = io.connect(socketURL, options)
     client1.on "count", (counter) ->
+      #I don't know why this part is only called once and not twice, it is called after the second client has connected
       counter.number.should.equal 2
 
     client2 = io.connect(socketURL, options)   
