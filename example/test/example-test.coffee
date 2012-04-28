@@ -27,6 +27,7 @@ describe "Example test with test server", ->
       #I don't know why this part is only called once and not twice, it is called after the second client has connected
       counter.number.should.equal 2
 
+
     client2 = io.connect(socketURL, options)   
         
     client2.on "count", (counter) ->
