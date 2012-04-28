@@ -16,10 +16,12 @@
   },
  "devDependencies": {
     "mocha": ">=1.0.2",
-    "should": "0.5.1"
+    "should": "0.5.1",
+    "zombie": ">=0.13.2",
+    "expectThat.mocha": ">=0.2.2"
   },
   "scripts":{
       "preinstall": "npm install https://github.com/LearnBoost/socket.io-client/tarball/master"
-    , "test":"./node_modules/mocha/bin/mocha --compilers coffee:coffee-script "
+    , "test":"mocha --compilers coffee:coffee-script "
   }
 }
