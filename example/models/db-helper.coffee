@@ -1,4 +1,5 @@
 neo4j = require "neo4j"
+async = require "async"
 
 class DatabaseHelper
   constructor: (server_address) ->
@@ -7,24 +8,34 @@ class DatabaseHelper
   get_node_by_id: (id,callback) ->
     query = "START nodes = node(#{id}) RETURN nodes"
     ids=[]
-    @db.query query, (err,result) ->
+    @db.query query, (err,results) ->
       if err
         callback err
       else
-        for row in result
-          ids[ids.length]=row["nodes"]
+        for result in results
+          ids[ids.length]=result["nodes"]
         callback null, ids
       
   delete_node_by_id: (id,callback) ->
     query = "START nodes = node(#{id}) RETURN nodes"
-    @db.query query, (err,result) ->
+    @db.query query, (err,results) ->
       if err
         callback err
       else
-        for row in result
-          row["nodes"].del ((err) -> callback err), true
-        callback null
-      
+        async.forEach results, ((result, callback) ->
+          result["nodes"].del callback, true
+        ), (err) ->
+          callback err
+        
+        
+  create_node: (data, callback)->
+    node = @db.createNode data
+    node.save (err) ->
+      if err
+        callback(err)  
+      else
+        callback null,node
+
   get_all_node_ids: (callback) ->
     @get_node_by_id "*",(err, nodes) ->
       if err
