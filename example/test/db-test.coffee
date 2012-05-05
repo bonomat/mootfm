@@ -19,10 +19,19 @@ describe "Statement", ->
       ids.should.have.lengthOf(0)
       done()
       
-  it "create statement", (done)->
-    db.create_statement "Apple is crap", (err,statement)->
+  it "create node", (done)->
+    data={}
+    helper.create_node data, (err,node)->
       should.not.exist(err)
-      helper.get_all_node_ids (err,ids)->
+      helper.get_all_node_ids (err, ids)->
         should.not.exist(err)
-        ids.should.have.lengthOf(1, "we should see 1 node in the db")
-        done()      
+        ids.should.have.lengthOf(1)
+        done()
+      
+#  it "create statement", (done)->
+#    db.create_statement "Apple is crap", (err,statement)->
+#      should.not.exist(err)
+#      helper.get_all_node_ids (err,ids)->
+#        should.not.exist(err)
+#        ids.should.have.lengthOf(1, "we should see 1 node in the db")
+#        done()      
