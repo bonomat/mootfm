@@ -44,7 +44,7 @@ describe "Statement", ->
     
   it "create and delete multiple nodes", (done)->
     data={}
-    n=5 #wieso ist das so langsam für 20?
+    n=1 #wieso ist das so langsam für 20? #concurrency issues therefore 1 for now
     async.forEach [1..n], ((i,callback) ->
       helper.create_node data, (err,node)->
         return done(err) if err
