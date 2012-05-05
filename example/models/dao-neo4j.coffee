@@ -6,6 +6,10 @@ class DAONeo4j
     helper = new DatabaseHelper server_address
 
   create_statement: (title, callback) ->
-    callback null,title
+    helper.create_node null, (err,id)->
+      if err
+        callback err 
+      callback null,title
+      
      
 module.exports = DAONeo4j
