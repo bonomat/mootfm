@@ -41,6 +41,25 @@ describe "Statement", ->
             return done(err) if err
             ids.should.have.lengthOf(0)
             done()
+    
+  it "create and delete multiple nodes", (done)->
+    data={}
+    n=20 #wieso ist das so langsam?
+    async.forEach [1..n], ((i,callback) ->
+      helper.create_node data, (err,node)->
+        return done(err) if err
+        helper.get_all_node_ids (err, ids)->
+          return done(err) if err
+          ids.length.should.be.above(0)
+          helper.delete_node_by_id node['id'], (err)->
+            return done(err) if err
+            callback()
+            
+      ), (err) ->
+        helper.get_all_node_ids (err, ids)->
+          return done(err) if err
+          ids.should.have.lengthOf(0)
+          done()
       
 #  it "create statement", (done)->
 #    db.create_statement "Apple is crap", (err,statement)->
