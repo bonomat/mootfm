@@ -29,37 +29,42 @@ describe "Statement", ->
         ids.should.have.lengthOf 1
         done()
         
-  it "create and delete node", (done)->
+  it "create multiple nodes", (done)->
+    data={}
+    n=20
+    async.forEach [1..n], ((i,callback) ->
+      helper.create_node data, (err,node)->
+        return done(err) if err
+        callback()
+      ), (err) ->
+        helper.get_all_node_ids (err, ids)->
+          return done(err) if err
+          ids.should.have.lengthOf n
+          done()   
+               
+  it "delete node", (done)->
     data={}
     helper.create_node data, (err,node)->
-      return done(err) if err
-      helper.get_all_node_ids (err, ids)->
+      helper.delete_node_by_id node['id'], (err)->
         return done(err) if err
-        ids.should.have.lengthOf 1
-        helper.delete_node_by_id node['id'], (err)->
+        helper.get_all_node_ids (err, ids)->
           return done(err) if err
-          helper.get_all_node_ids (err, ids)->
-            return done(err) if err
-            ids.should.have.lengthOf 0
-            done()
+          ids.should.have.lengthOf 0
+          done()
             
   it "delete not existant node", (done)->
     helper.delete_node_by_id 1, (err)->
       err.should.be.an.instanceof(Error)
       done()
     
-  it "create and delete multiple nodes", (done)->
+  it "delete multiple nodes", (done)->
     data={}
     n=1 #wieso ist das so langsam für 20? #concurrency issues -> therefore 1 for now
     async.forEach [1..n], ((i,callback) ->
       helper.create_node data, (err,node)->
-        return done(err) if err
-        helper.get_all_node_ids (err, ids)->
+        helper.delete_node_by_id node['id'], (err)->
           return done(err) if err
-          ids.length.should.be.above 0
-          helper.delete_node_by_id node['id'], (err)->
-            return done(err) if err
-            callback()
+          callback()
             
       ), (err) ->
         helper.get_all_node_ids (err, ids)->
@@ -74,21 +79,17 @@ describe "Statement", ->
         return done(err) if err
         ids.should.have.lengthOf 1, "we should see 1 node in the db"
         statement.id.should.eql ids[0], "statement should have the id of the node in the db"
-        done()    
+        done()
         
-  it "create and delete statement", (done)->
+  it "delete statement", (done)->
     db.create_statement "Apple is crap", (err,statement)->
-      return done(err) if err
       helper.get_all_node_ids (err,ids)->
-        return done(err) if err
-        ids.should.have.lengthOf 1, "we should see 1 node in the db"
-        statement.id.should.eql ids[0], "statement should have the id of the node in the db"
         db.delete_statement statement, (err)->
           return done(err) if err
           helper.get_all_node_ids (err,ids)->
             return done(err) if err
             ids.should.have.lengthOf 0, "db should be empty by now"
-            done()  
+            done()
             
   it "wrong delete statement", (done)->
     statement = {}
@@ -97,7 +98,16 @@ describe "Statement", ->
       done()
 
   it "delete statement with wrong id", (done)->
-    statement = new Statement 1557
+    statement = new Statement 1337
     db.delete_statement statement, (err)->
       err.should.be.an.instanceof(Error)
       done()
+      
+  it "get statement", (done)->
+    db.create_statement "Apple is crap", (err,statement)->
+      return done(err) if err
+      helper.get_all_node_ids (err,ids)->
+        return done(err) if err
+        ids.should.have.lengthOf 1, "we should see 1 node in the db"
+        statement.id.should.eql ids[0], "statement should have the id of the node in the db"
+        done()
