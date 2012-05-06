@@ -10,9 +10,8 @@ module.exports = class DatabaseHelper
     ids=[]
     @db.query query, (err,results) ->
       return callback err if err
-      for result in results
-        ids[ids.length]=result["nodes"]
-      callback null, ids
+      return callback new Error "couldnt find node" if results.length != 1
+      callback null, results[0]["nodes"]
       
   delete_node_by_id: (id,callback) ->
     query = "START nodes = node(#{id}) RETURN nodes"
@@ -23,7 +22,6 @@ module.exports = class DatabaseHelper
       ), (err) ->
         callback err
         
-        
   create_node: (data, callback)->
     node = @db.createNode data
     node.save (err) ->
@@ -31,11 +29,12 @@ module.exports = class DatabaseHelper
       callback null,node
 
   get_all_node_ids: (callback) ->
-    @get_node_by_id "*",(err, nodes) ->
+    query = "START nodes = node(*) RETURN nodes"
+    ids=[]
+    @db.query query, (err,results) ->
       return callback err if err
-      ids=[]
-      for node in nodes
-        ids[ids.length]=node["id"]
+      for result in results
+        ids[ids.length]=result["nodes"]["id"]
       callback null, ids
     
   delete_all_nodes: (callback) ->
