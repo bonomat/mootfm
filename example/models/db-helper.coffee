@@ -1,7 +1,7 @@
 neo4j = require "neo4j"
 async = require "async"
 
-class DatabaseHelper
+module.exports = class DatabaseHelper
   constructor: (server_address) ->
     @db = new neo4j.GraphDatabase(process.env.NEO4J_URL or server_address)
 
@@ -47,5 +47,3 @@ class DatabaseHelper
     
   delete_all_nodes: (callback) ->
     @delete_node_by_id "*",callback
-    
-module.exports = DatabaseHelper
