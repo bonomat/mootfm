@@ -55,10 +55,10 @@ describe "Statement:", ->
         get_statement.should.eql created_statement
         done()
        
-#  it "get statement with wrong id", (done)->
-#    db.get_statement 1337, (err,get_statement)->
-#      err.should.be.an.instanceof(Error)
-#      done()
+  it "get statement with wrong id", (done)->
+    db.get_statement 1337, (err,get_statement)->
+      err.should.be.an.instanceof(Error)
+      done()
         
   it "create new argument", (done)->
     db.new_statement "Apple is crap", (err,apple_statement)->
