@@ -13,13 +13,12 @@ describe "Example test with test server", ->
     @server = new Server 5000
     @server.start done
   afterEach (done) ->    
-    console.info "running after test"
     @server.stop done
 
   it "When one user is connected count should be 1", (done) ->
-    console.info "starting test1"
     client1 = io.connect(socketURL, options)
     client1.on "count", (counter) ->
       counter.number.should.equal 1
       client1.disconnect()
       done()
+

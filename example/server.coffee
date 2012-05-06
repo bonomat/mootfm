@@ -24,5 +24,6 @@ server = new Server 8080
 
 if not module.parent
   #starting server
-  server.start()
+  server.start (done) ->
+    console.log "Server successfull started"
 

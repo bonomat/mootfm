@@ -46,6 +46,3 @@ class exports.Server
   stop: (callback) ->
     @io.server.close()
     callback()
-
-  
-    
