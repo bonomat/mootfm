@@ -66,11 +66,17 @@ describe "Statement:", ->
             
   it "create new argument for missing statement", (done)->
     missing_statement = new Statement 1337
-    db.new_argument "Apple has child labour in China", "pro", missing_statement, (err,labour_statement)->
+    db.new_argument "Apple has child labour", "pro", missing_statement, (err,labour_statement)->
       err.should.be.an.instanceof(Error)
       helper.get_all_node_ids (err,ids)->
         return done(err) if err
         ids.should.have.lengthOf 1, "argument should be created even if statement is missing"
+        done()
+        
+  it "sides", (done)->
+    db.new_statement "Apple is crap", (err,apple_statement)->
+      db.new_argument "Apple has child labour", "pro", apple_statement, (err,labour_statement)->
+        apple_statement.sides.should.eql ["pro"], "we should have exactly one side: pro" 
         done()
 
 
