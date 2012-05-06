@@ -4,7 +4,6 @@ class exports.Server
     console.log "constructor started"
     express = require 'express'
     @express = express.createServer()
-    @io = require('socket.io').listen(@express)
     @express.use express.bodyParser()
     @status = "initialized"
         
@@ -16,37 +15,37 @@ class exports.Server
     @express.use(@express.router)
     @express.use(express.static(__dirname + '/public'))
 
-    #@express.configure 'development', () -> 
+    #development
     @express.use(express.errorHandler({ dumpExceptions: true, showStack: true })) 
 
-    #@express.configure 'production', () -> 
+    #production
     #@express.use(express.errorHandler()) 
 
-  start: ->
+  start: (callback) ->
     console.log "Server starting"
     @express.listen @port
-    console.log "Server listening on port " + @port
-    @status = "running"
+    console.log "Server listening on port " + @port    
+
     @express.get '/', (req, res) ->
-      res.render 'index', {title: 'exampleNew'} 
+      res.render 'index', {title: 'exampleNew'}
+
+    @io = require('socket.io').listen @express
+    count = 0
     @io.sockets.on "connection", (socket) ->
       count++
-      
-      @io.sockets.emit 'count', { number: count }
-      socket.on 'disconnect', () ->
-        count--
-        io.sockets.emit 'count', { number: count }
+      console.log "user connected " + count
+      socket.emit 'count', { number: count }
+      socket.broadcast.emit 'count', { number: count }
 
       socket.on 'disconnect', () ->
         count--
-        io.sockets.emit 'count', { number: count }
+        console.log "user disconnected "
+        socket.broadcast.emit 'count', { number: count }
+     callback()
 
-      setInterval(() ->
-        socket.emit 'count', { number: count }, 2000)
-
-  stop: (cb) ->
+  stop: (callback) ->
     @io.server.close()
-    cb()
+    callback()
 
   
     

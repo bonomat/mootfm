@@ -1,5 +1,5 @@
 express = require('express')
-io = require('socket.io')
+
 
 app = module.exports = express.createServer() 
 
@@ -18,7 +18,7 @@ app.configure 'development', () ->
 app.configure 'production', () -> 
   app.use(express.errorHandler()) 
 
-Server = require('./Socket').Server
+Server = require('./socket').Server
 
 server = new Server 8080
 

@@ -3,8 +3,8 @@ clients = {}
 count = 0
 
 module.exports = 
-  start: (port, cb) ->
-    io = require("socket.io").listen port, cb
+  start: (cb) ->
+    io = require("socket.io").listen 5000, cb
     io.sockets.on "connection", (socket) ->
       count++
       

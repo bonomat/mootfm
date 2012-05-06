@@ -1,23 +1,24 @@
 require 'should'
 io = require('socket.io-client')
 
-Server = require('../Socket').Server
+Server = require('../socket').Server
 
-server = new Server 8080
-
-socketURL = 'http://0.0.0.0:5000'
-
+socketURL = 'http://localhost:5000'
 options = 
   transports: ['websockets']
-  'force new connection':true
+  'force new connection':false
 
 describe "Example test with test server", ->
   beforeEach (done) ->
-    server.start 5000, done
-  afterEach (done) ->
-    server.stop done
+    @server = new Server 5000
+    @server.start done
+    console.info "running before test"
+  afterEach (done) ->    
+    console.info "running after test"
+    @server.stop done
 
   it "When one user is connected count should be 1", (done) ->
+    console.info "starting test1"
     client1 = io.connect(socketURL, options)
     client1.on "count", (counter) ->
       counter.number.should.equal 1
