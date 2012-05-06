@@ -41,7 +41,7 @@ class exports.Server
         count--
         console.log "user disconnected "
         socket.broadcast.emit 'count', { number: count }
-     callback()
+    callback()
 
   stop: (callback) ->
     @io.server.close()
