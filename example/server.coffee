@@ -18,32 +18,11 @@ app.configure 'development', () ->
 app.configure 'production', () -> 
   app.use(express.errorHandler()) 
 
-io = require('socket.io').listen(app)
-count = 0
+Server = require('./Socket').Server
 
-io.sockets.on 'connection', (socket) ->
-  count++
-  test = 'Hi there' 
- 
-  io.sockets.emit 'count', { number: count }
-  io.sockets.emit 'test', { text: test }
-
-  setInterval(() ->
-    io.sockets.emit 'count', { number: count }
-  , 1200)
-
-  setInterval(() ->
-    io.sockets.emit 'test', { text: test }
-  , 1200)
-
-  socket.on 'disconnect', () ->
-    count--
-    io.sockets.emit 'count', { number: count }
-
-app.get '/', (req, res) ->
-  res.render 'index', {title: 'example'}
+server = new Server 8080
 
 if not module.parent
-  app.listen 8080
-  console.log "Express server listening on port %d", app.address().port
+  #starting server
+  server.start()
 
