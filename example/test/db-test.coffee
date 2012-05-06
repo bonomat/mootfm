@@ -16,7 +16,7 @@ describe "Statement", ->
   it "inital empty db", (done)->
     helper.get_all_node_ids (err, ids)->
       return done(err) if err
-      ids.should.have.lengthOf(0)
+      ids.should.have.lengthOf 0
       done()
       
   it "create node", (done)->
@@ -25,7 +25,7 @@ describe "Statement", ->
       return done(err) if err
       helper.get_all_node_ids (err, ids)->
         return done(err) if err
-        ids.should.have.lengthOf(1)
+        ids.should.have.lengthOf 1
         done()
         
   it "create and delete node", (done)->
@@ -34,12 +34,12 @@ describe "Statement", ->
       return done(err) if err
       helper.get_all_node_ids (err, ids)->
         return done(err) if err
-        ids.should.have.lengthOf(1)
+        ids.should.have.lengthOf 1
         helper.delete_node_by_id node['id'], (err)->
           return done(err) if err
           helper.get_all_node_ids (err, ids)->
             return done(err) if err
-            ids.should.have.lengthOf(0)
+            ids.should.have.lengthOf 0
             done()
     
   it "create and delete multiple nodes", (done)->
@@ -50,7 +50,7 @@ describe "Statement", ->
         return done(err) if err
         helper.get_all_node_ids (err, ids)->
           return done(err) if err
-          ids.length.should.be.above(0)
+          ids.length.should.be.above 0
           helper.delete_node_by_id node['id'], (err)->
             return done(err) if err
             callback()
@@ -58,7 +58,7 @@ describe "Statement", ->
       ), (err) ->
         helper.get_all_node_ids (err, ids)->
           return done(err) if err
-          ids.should.have.lengthOf(0)
+          ids.should.have.lengthOf 0
           done()
       
   it "create statement", (done)->
@@ -66,5 +66,6 @@ describe "Statement", ->
       return done(err) if err
       helper.get_all_node_ids (err,ids)->
         return done(err) if err
-        ids.should.have.lengthOf(1, "we should see 1 node in the db")
+        ids.should.have.lengthOf 1, "we should see 1 node in the db"
+        statement.id.should.eql ids[0], "statement should have the id of the node in the db"
         done()      
