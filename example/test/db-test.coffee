@@ -50,11 +50,27 @@ describe "Statement:", ->
         get_statement.should.eql created_statement, "we should get back the same statement"
         done()
         
+  it "get statement with wrong id", (done)->
+    db.get_statement 1337, (err,get_statement)->
+      err.should.be.an.instanceof(Error)
+      done()
+        
   it "create new argument", (done)->
-    db.new_statementnew_statement "Apple is crap", (err,apple_statement)->
+    db.new_statement "Apple is crap", (err,apple_statement)->
       db.new_argument "Apple has child labour in China", "pro", apple_statement, (err,labour_statement)->
         return done(err) if err
         helper.get_all_node_ids (err,ids)->
             return done(err) if err
             ids.should.have.lengthOf 2, "we have 2 statements by now"
             done()
+            
+  it "create new argument for missing statement", (done)->
+    missing_statement = new Statement 1337
+    db.new_argument "Apple has child labour in China", "pro", missing_statement, (err,labour_statement)->
+      err.should.be.an.instanceof(Error)
+      helper.get_all_node_ids (err,ids)->
+        return done(err) if err
+        ids.should.have.lengthOf 1, "argument should be created even if statement is missing"
+        done()
+
+

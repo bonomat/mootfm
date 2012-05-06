@@ -21,3 +21,9 @@ module.exports = class DAONeo4j
       return callback err if err
       statement = new Statement node["id"]
       callback null,statement
+      
+  new_argument: (title,side,statement,callback) ->
+    @helper.create_node {title:title}, (err,node)->
+      return callback err if err
+      statement = new Statement node["id"]
+      callback null,statement
