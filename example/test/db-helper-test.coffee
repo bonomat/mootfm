@@ -1,7 +1,7 @@
 should=require 'should'
 async = require "async"
 
-DatabaseHelper = require("../models/db-helper")
+DatabaseHelper = require "../models/db-helper"
 
 describe "DB Helper:", ->
   helper = new DatabaseHelper "http://localhost:7474"

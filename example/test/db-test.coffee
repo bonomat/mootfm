@@ -1,9 +1,9 @@
 should=require 'should'
 async = require "async"
-Statement = require("../models/statement")
+Statement = require "../models/statement"
 
-DatabaseHelper = require("../models/db-helper")
-DAONeo4j = require("../models/dao-neo4j")
+DatabaseHelper = require "../models/db-helper"
+DAONeo4j = require "../models/dao-neo4j"
 
 describe "Statement:", ->
   helper = new DatabaseHelper "http://localhost:7474"
@@ -73,10 +73,15 @@ describe "Statement:", ->
         ids.should.have.lengthOf 1, "argument should be created even if statement is missing"
         done()
         
-  it "sides", (done)->
+#  it "sides", (done)->
+#    db.new_statement "Apple is crap", (err,apple_statement)->
+#      db.new_argument "Apple has child labour", "pro", apple_statement, (err,labour_statement)->
+#        apple_statement.sides.should.eql ["pro"], "we should have exactly one side: pro" 
+#        done()
+        
+  it "empty votes", (done)->
     db.new_statement "Apple is crap", (err,apple_statement)->
-      db.new_argument "Apple has child labour", "pro", apple_statement, (err,labour_statement)->
-        apple_statement.sides.should.eql ["pro"], "we should have exactly one side: pro" 
-        done()
+      apple_statement.votes.should.eql {}, "we should have no sides yet" 
+      done()
 
 

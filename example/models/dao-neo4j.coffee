@@ -1,5 +1,6 @@
-DatabaseHelper = require("./db-helper")
-Statement = require("./statement")
+DatabaseHelper = require "./db-helper"
+Statement = require "./statement"
+async = require "async"
 
 module.exports = class DAONeo4j
   constructor: (server_address) ->
@@ -9,6 +10,7 @@ module.exports = class DAONeo4j
     @helper.create_node {title:title}, (err,node)->
       return callback err if err
       statement = new Statement node["id"]
+      statement.votes={}
       callback null,statement
       
   delete_statement: (statement, callback) ->
@@ -17,13 +19,21 @@ module.exports = class DAONeo4j
       callback err
       
   get_statement: (id, callback) ->
-    @helper.get_node_by_id id, (err,node)->
-      return callback err if err
-      statement = new Statement node["id"]
-      callback null,statement
+    async.parallel
+      statement: (callback)->
+        @helper.get_node_by_id id, (err,node)->
+          return callback err if err
+          statement = new Statement node["id"]
+          callback null,statement
+      votes: (callback) ->
+        @helper.get_votes id, callback
+      , (err, results) -> 
+        return callback err if err
+        statement=result.statement
+        statement.votes=result.votes
+        callback null, statement
       
   new_argument: (title,side,statement,callback) ->
-    @helper.create_node {title:title}, (err,node)->
-      return callback err if err
-      statement = new Statement node["id"]
-      callback null,statement
+    @new_statement title, callback
+      
+
