@@ -20,17 +20,11 @@ module.exports = class DAONeo4j
       callback err
       
   get_statement: (id, callback) ->
-    async.parallel
-      statement: (callback)->
-        @helper.get_node_by_id id, (err,node)->
-          return callback err if err
-          statement = new Statement node["id"]
-          callback null,statement
-      votes: (callback) ->
-        @helper.get_votes id, callback
-      , (err, results) -> 
+    @helper.get_node_by_id id, (err,node)->
+      return callback err if err
+      statement = new Statement node["id"]
+      @helper.get_votes id, (err,votes)->
         return callback err if err
-        statement=result.statement
         statement.votes=result.votes
         callback null, statement
       
