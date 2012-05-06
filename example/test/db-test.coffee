@@ -42,6 +42,11 @@ describe "Statement", ->
             return done(err) if err
             ids.should.have.lengthOf 0
             done()
+            
+  it "delete not existant node", (done)->
+    helper.delete_node_by_id 1, (err)->
+      err.should.be.an.instanceof(Error)
+      done()
     
   it "create and delete multiple nodes", (done)->
     data={}
