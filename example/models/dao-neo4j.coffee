@@ -15,3 +15,9 @@ module.exports = class DAONeo4j
     return callback new Error "encountered not valid statement" if not statement.id
     @helper.delete_node_by_id statement.id, (err)->
       callback err
+      
+  get_statement: (id, callback) ->
+    @helper.get_node_by_id id, (err,node)->
+      return callback err if err
+      statement = new Statement node["id"]
+      callback null,statement
