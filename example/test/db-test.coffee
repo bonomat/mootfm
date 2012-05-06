@@ -13,7 +13,7 @@ describe "Statement:", ->
     helper.delete_all_nodes done
     
   it "create statement", (done)->
-    db.create_statement "Apple is crap", (err,statement)->
+    db.new_statement "Apple is crap", (err,statement)->
       return done(err) if err
       helper.get_all_node_ids (err,ids)->
         return done(err) if err
@@ -22,7 +22,7 @@ describe "Statement:", ->
         done()
         
   it "delete statement", (done)->
-    db.create_statement "Apple is crap", (err,statement)->
+    db.new_statement "Apple is crap", (err,statement)->
       helper.get_all_node_ids (err,ids)->
         db.delete_statement statement, (err)->
           return done(err) if err
@@ -44,8 +44,17 @@ describe "Statement:", ->
       done()
       
   it "get statement", (done)->
-    db.create_statement "Apple is crap", (err,created_statement)->
+    db.new_statement "Apple is crap", (err,created_statement)->
       db.get_statement created_statement.id, (err,get_statement)->
         return done(err) if err
         get_statement.should.eql created_statement, "we should get back the same statement"
         done()
+        
+  it "create new argument", (done)->
+    db.new_statementnew_statement "Apple is crap", (err,apple_statement)->
+      db.new_argument "Apple has child labour in China", "pro", apple_statement, (err,labour_statement)->
+        return done(err) if err
+        helper.get_all_node_ids (err,ids)->
+            return done(err) if err
+            ids.should.have.lengthOf 2, "we have 2 statements by now"
+            done()

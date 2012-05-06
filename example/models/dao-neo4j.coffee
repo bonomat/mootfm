@@ -5,7 +5,7 @@ module.exports = class DAONeo4j
   constructor: (server_address) ->
     @helper = new DatabaseHelper server_address
 
-  create_statement: (title, callback) ->
+  new_statement: (title, callback) ->
     @helper.create_node {title:title}, (err,node)->
       return callback err if err
       statement = new Statement node["id"]
