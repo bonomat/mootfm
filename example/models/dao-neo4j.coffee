@@ -25,14 +25,12 @@ module.exports = class DAONeo4j
     @helper.get_node_by_id id, (err,node)->
       return callback err if err
       return new Error "got wrong node back" if node["id"]!=id
-      @helper.get_node_by_id id, (err,node)->
-        return callback err if err
-        return new Error "got wrong node back" if node["id"]!=id
-        return new Error "got wrong node back" if node.data.type!="statement"
-        statement = new Statement id
-        statement.title=node.data.title
-        statement.type=node.data.type
-        callback null, statement
+      return new Error "got wrong node back" if node.data.type!="statement"
+      statement = new Statement id
+      statement.title=node.data.title
+      statement.type=node.data.type
+      statement.votes={} #needs fix
+      callback null, statement 
       
   new_argument: (title,side,statement,callback) ->
     @new_statement title, callback

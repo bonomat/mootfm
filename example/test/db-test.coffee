@@ -48,12 +48,12 @@ describe "Statement:", ->
       err.should.be.an.instanceof(Error)
       done()
       
-#  it "get statement", (done)->
-#    db.new_statement "Apple is crap", (err,created_statement)->
-#      db.get_statement created_statement.id, (err,get_statement)->
-#        return done(err) if err
-#        get_statement.should.eql created_statement, "we should get back the same statement"
-#        done()
+  it "get statement", (done)->
+    db.new_statement "Apple is crap", (err,created_statement)->
+      db.get_statement created_statement.id, (err,get_statement)->
+        return done(err) if err
+        get_statement.should.eql created_statement
+        done()
        
 #  it "get statement with wrong id", (done)->
 #    db.get_statement 1337, (err,get_statement)->
