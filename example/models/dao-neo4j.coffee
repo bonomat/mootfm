@@ -11,6 +11,7 @@ module.exports = class DAONeo4j
       return callback err if err
       statement = new Statement node["id"]
       statement.votes={}
+      statement.title=title
       callback null,statement
       
   delete_statement: (statement, callback) ->

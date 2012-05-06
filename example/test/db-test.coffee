@@ -12,9 +12,10 @@ describe "Statement:", ->
   beforeEach (done) ->
     helper.delete_all_nodes done
     
-  it "create statement", (done)->
+  it "new statement", (done)->
     db.new_statement "Apple is crap", (err,statement)->
       return done(err) if err
+      statement.title.should.eql "Apple is crap"
       helper.get_all_node_ids (err,ids)->
         return done(err) if err
         ids.should.have.lengthOf 1, "we should see 1 node in the db"
@@ -50,10 +51,10 @@ describe "Statement:", ->
         get_statement.should.eql created_statement, "we should get back the same statement"
         done()
         
-  it "get statement with wrong id", (done)->
-    db.get_statement 1337, (err,get_statement)->
-      err.should.be.an.instanceof(Error)
-      done()
+#  it "get statement with wrong id", (done)->
+#    db.get_statement 1337, (err,get_statement)->
+#      err.should.be.an.instanceof(Error)
+#      done()
         
   it "create new argument", (done)->
     db.new_statement "Apple is crap", (err,apple_statement)->
