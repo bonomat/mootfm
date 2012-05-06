@@ -44,7 +44,7 @@ describe "Statement", ->
     
   it "create and delete multiple nodes", (done)->
     data={}
-    n=1 #wieso ist das so langsam für 20? #concurrency issues therefore 1 for now
+    n=1 #wieso ist das so langsam für 20? #concurrency issues -> therefore 1 for now
     async.forEach [1..n], ((i,callback) ->
       helper.create_node data, (err,node)->
         return done(err) if err
@@ -61,10 +61,10 @@ describe "Statement", ->
           ids.should.have.lengthOf(0)
           done()
       
-#  it "create statement", (done)->
-#    db.create_statement "Apple is crap", (err,statement)->
-#      should.not.exist(err)
-#      helper.get_all_node_ids (err,ids)->
-#        should.not.exist(err)
-#        ids.should.have.lengthOf(1, "we should see 1 node in the db")
-#        done()      
+  it "create statement", (done)->
+    db.create_statement "Apple is crap", (err,statement)->
+      return done(err) if err
+      helper.get_all_node_ids (err,ids)->
+        return done(err) if err
+        ids.should.have.lengthOf(1, "we should see 1 node in the db")
+        done()      
