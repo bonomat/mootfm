@@ -8,11 +8,12 @@ module.exports = class DAONeo4j
     @helper = new DatabaseHelper server_address
 
   new_statement: (title, callback) ->
-    @helper.create_node {title:title}, (err,node)->
+    @helper.create_node {title:title, type:"statement"}, (err,node)->
       return callback err if err
       statement = new Statement node["id"]
       statement.votes={}
       statement.title=title
+      statement.type="statement"
       callback null,statement
       
   delete_statement: (statement, callback) ->
@@ -24,10 +25,13 @@ module.exports = class DAONeo4j
     @helper.get_node_by_id id, (err,node)->
       return callback err if err
       return new Error "got wrong node back" if node["id"]!=id
-      statement = new Statement id
-      @helper.get_votes id, (err,votes)->
+      @helper.get_node_by_id id, (err,node)->
         return callback err if err
-        statement.votes=result.votes
+        return new Error "got wrong node back" if node["id"]!=id
+        return new Error "got wrong node back" if node.data.type!="statement"
+        statement = new Statement id
+        statement.title=node.data.title
+        statement.type=node.data.type
         callback null, statement
       
   new_argument: (title,side,statement,callback) ->

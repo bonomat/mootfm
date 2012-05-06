@@ -21,7 +21,10 @@ describe "Statement:", ->
         return done(err) if err
         ids.should.have.lengthOf 1, "we should see 1 node in the db"
         statement.id.should.eql ids[0], "statement should have the id of the node in the db"
-        done()
+        helper.get_node_by_id ids[0], (err,node)->
+          return done err if err
+          "statement".should.eql node.data.type
+          done()
         
   it "delete statement", (done)->
     db.new_statement "Apple is crap", (err,statement)->
@@ -51,7 +54,7 @@ describe "Statement:", ->
 #        return done(err) if err
 #        get_statement.should.eql created_statement, "we should get back the same statement"
 #        done()
-        
+       
 #  it "get statement with wrong id", (done)->
 #    db.get_statement 1337, (err,get_statement)->
 #      err.should.be.an.instanceof(Error)
@@ -94,7 +97,7 @@ describe "User:", ->
     helper.delete_all_nodes done
     
     
-  it "create user", (done)->
+  it "new user", (done)->
     name="Toby"
     db.new_user name, (err,new_user)->
       return done(err) if err
@@ -104,7 +107,10 @@ describe "User:", ->
         expected_user= new User ids[0]
         expected_user.name=name
         expected_user.should.eql new_user
-        done()
+        helper.get_node_by_id ids[0], (err,node)->
+          return done err if err
+          node.data.type.should.eql "user"
+          done()
         
   it "get user", (done)->
     name="Toby"
