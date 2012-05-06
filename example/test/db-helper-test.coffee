@@ -79,4 +79,3 @@ describe "DB Helper:", ->
           return done(err) if err
           ids.should.have.lengthOf 0
           done()
-      
