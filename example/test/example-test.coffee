@@ -6,7 +6,7 @@ Server = require('../socket').Server
 socketURL = 'http://localhost:5000'
 options = 
   transports: ['websockets']
-  'force new connection':false
+  'force new connection':true 
 
 describe "Example test with test server", ->
   beforeEach (done) ->
