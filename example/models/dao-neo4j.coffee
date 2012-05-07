@@ -9,11 +9,12 @@ module.exports = class DAONeo4j
 
   new_statement: (title, callback) ->
     @helper.create_node {title:title, type:"statement"}, (err,node)->
-      return callback err if err
+      return callback new Error "create node failed:"+err if err
       statement = new Statement node["id"]
       statement.votes={}
       statement.title=title
       statement.type="statement"
+      statement.node=node
       callback null,statement
       
   delete_statement: (statement, callback) ->
@@ -30,17 +31,26 @@ module.exports = class DAONeo4j
       statement.title=node.data.title
       statement.type=node.data.type
       statement.votes={} #needs fix
+      statement.node=node
       callback null, statement 
       
+  attach_argument: (statement, argument, side, callback)->
+    @helper.new_relationship argument.node, statement.node, side, callback
+    
   new_argument: (title,side,statement,callback) ->
-    @new_statement title, callback
-      
+    @new_statement title, (err, argument)=>
+      return callback new Error "new statement failed:"+err if err
+      @attach_argument statement, argument, side, (err)->
+        return callback err if err
+        callback argument
+        
   new_user: (name,callback)->
     data={type:"user",name:name}
     @helper.create_node data, (err,node)->
       return callback err if err
       user = new User node["id"]
       user.name=name
+      user.node=node
       callback null,user
       
   get_user_by_id: (id,callback)->
@@ -49,4 +59,5 @@ module.exports = class DAONeo4j
       return new Error "got wrong node back" if node["id"]!=id
       user = new User id
       user.name=node.data.name
+      user.node=node
       callback null, user
