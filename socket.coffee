@@ -3,29 +3,32 @@ class exports.Server
   constructor: (@port) ->
     express = require 'express'
     @conf = require './conf'    
-    @express = express.createServer()
-    @express.use express.bodyParser()
+    @app = express.createServer()
+    @app.use express.bodyParser()
+    User = require "./models/user"
     @status = "initialized"
         
-    @express.set('views', __dirname + '/views')
-    @express.set('view engine', 'jade')
-    @express.use(express.bodyParser())
-    @express.use(express.methodOverride())
-    @express.use(require('stylus').middleware({ src: __dirname + '/public' }))
-    @express.use(@express.router)
-    @express.use(express.static(__dirname + '/public'))
-    @express.use(express.cookieParser())
-    @express.use(express.session { secret:'asfgr234rfs'})
+    @app.set('views', __dirname + '/views')
+    @app.set('view engine', 'jade')
+    @app.use(express.bodyParser())
+    @app.use(express.methodOverride())
+    @app.use(require('stylus').middleware({ src: __dirname + '/public' }))
+    #@app.use(@app.router)
+    @app.use(express.static(__dirname + '/public'))
+    @app.use(express.cookieParser())
+    @app.use(express.session { secret :'test'})
 
     #development
-    @express.use(express.errorHandler({
+    @app.use(express.errorHandler({
       dumpExceptions: true, showStack: true
     }))
 
     #production
-    #@express.use(express.errorHandler())
+    #@app.use(express.errorHandler())
     
     @everyauth = require 'everyauth'
+
+###################every auth settings#################
     @everyauth
       .google
       .appId(@conf.google.clientId)
@@ -36,29 +39,60 @@ class exports.Server
         googleUser.expiresIn = extra.expires_in
         usersByGoogleId[googleUser.id] or (usersByGoogleId[googleUser.id] = addUser("google", googleUser))
       ).redirectPath "/"
+    exampleUser = new User 'test', 'test@gmail.com', 'test'
+    @usersByLogin = [ { name: "test", instrument: exampleUser } ]
 
+    
+    @everyauth
+      .password
+      .loginWith("login")
+      .getLoginPath("/login")
+      .postLoginPath("/login")
+      .loginView("login.jade")
+      .loginLocals((req, res, done) ->
+        setTimeout (->
+          done null,
+            title: "Async login"
+        ), 200
+    ).authenticate((login, password) ->
+      errors = []
+      errors.push "Missing login"  unless login
+      errors.push "Missing password"  unless password
+      return errors  if errors.length
+      user = @usersByLogin[login]
+      return [ "Login failed" ]  unless user
+      return [ "Login failed" ]  if user.password isnt password
+      user
+    ).getRegisterPath("/register").postRegisterPath("/register").registerView("register.jade").registerLocals((req, res, done) ->
+      setTimeout (->
+        done null,
+          title: "Async Register"
+      ), 200
+    ).extractExtraRegistrationParams((req) ->
+      email: req.body.email
+    ).validateRegistration((newUserAttrs, errors) ->
+      login = newUserAttrs.login
+      errors.push "Login already taken"  if @usersByLogin[login]
+      errors
+    ).registerUser((newUserAttrs) ->
+      login = newUserAttrs[@loginKey()]
+      @usersByLogin[login] = newUserAttrs
+    ).loginSuccessRedirect("/").registerSuccessRedirect "/"
 
-    @express.use(@everyauth.middleware())
-    @everyauth.helpExpress(@express)    
+    @app.use(@everyauth.middleware())
+    @everyauth.helpExpress(@app)    
 
   start: (callback) ->
     console.log "Server starting"
-    @express.listen @port
+    @app.listen @port
     console.log "Server listening on port " + @port
 
-    @express.get '/', (req, res) ->
-      if req.session.auth
-        console.log req.session.auth.github
-        user = req.session.auth.github.user.name
-        console.log "user:"+user
-        res.render('index', {
-          title: user
-          usr: user
-          layout:false
-        })
+    @app.get '/', (req, res) ->
+      res.render('home', { users: JSON.stringify(@usersByLogin, null, 2) } )
 
 
-    @io = require('socket.io').listen @express
+
+    @io = require('socket.io').listen @app
     count = 0
     @io.sockets.on "connection", (socket) =>
       count++
