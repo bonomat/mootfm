@@ -1,3 +1,3 @@
 module.exports = class User
-  constructor: (@id) ->
+  constructor: (@id,@email,@password) ->
 
