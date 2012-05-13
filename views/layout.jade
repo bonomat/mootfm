@@ -20,3 +20,8 @@ html
           socket.on('test', function (data) {
                 $('p').text(data.text + '!');
           });   
+     - if (typeOf(user) != 'undefined')
+     span= "Hi, " + user + " "
+     a(href="/logout") = "Logout"
+     - else
+     a(href= "/auth/google")= "Login"
