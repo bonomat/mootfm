@@ -20,7 +20,7 @@ app.configure 'production', () ->
 
 Server = require('./socket').Server
 
-server = new Server 8080
+server = new Server process.env.PORT || 8080
 
 if not module.parent
   #starting server
