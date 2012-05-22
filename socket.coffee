@@ -5,11 +5,7 @@ class exports.Server
     DAONeo4j = require './models/dao-neo4j'
 
     @db = new DAONeo4j 'http://localhost:7474'
-    @db.get_user_by_id "Toby", (err, get_user) =>
-      console.log "User does not exist, creating test user" if err
-      name="Toby"
-      @db.new_user name, (err,new_user)->
-        console.log "Could not create user" if err
+
     express = require 'express'
     @conf = require './conf'    
     @app = express.createServer()
@@ -78,17 +74,20 @@ class exports.Server
       ), 200
     ).extractExtraRegistrationParams((req) ->
       email: req.body.email
-    ).validateRegistration((newUserAttrs, errors) ->
+    ).validateRegistration((newUserAttrs, errors) =>
       login = newUserAttrs.login
-      console.log @db
       #TODO check if user is in DB      
-      @db.get_user_by_id login, (err, get_user)->
-        errors.push 'Login already taken'  if !err     
+#      @db.get_user_by_id login, (err, get_user)->
+#        errors.push 'Login already taken'  if !err     
       errors   
-    ).registerUser((newUserAttrs) ->
+    ).registerUser((newUserAttrs) =>
       login = newUserAttrs[@loginKey()]
-      console.log login + 'retrieved2'
-      @usersByLogin[login] = newUserAttrs
+      @db.new_user login, (err,new_user)->
+        errors = []
+        console.log "Could not create user" if err
+        errors.push 'An unexpected error has occured' if err
+        return errors  if errors.length
+
     ).loginSuccessRedirect('/').registerSuccessRedirect '/'
 
     @app.use(@everyauth.middleware())
