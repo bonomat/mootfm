@@ -3,14 +3,13 @@ class exports.Server
   constructor: (@port) ->
     User = require './models/user'
     DAONeo4j = require './models/dao-neo4j'
-
+    
     @db = new DAONeo4j 'http://localhost:7474'
-
     express = require 'express'
     @conf = require './conf'    
     @app = express.createServer()
     @app.use express.bodyParser()
-    User = require './models/user'
+
     @status = 'initialized'
         
     @app.set('views', __dirname + '/views')
@@ -18,7 +17,6 @@ class exports.Server
     @app.use(express.bodyParser())
     @app.use(express.methodOverride())
     @app.use(require('stylus').middleware({ src: __dirname + '/public' }))
-    #@app.use(@app.router)
     @app.use(express.static(__dirname + '/public'))
     @app.use(express.cookieParser())
     @app.use(express.session { secret :'test'})
@@ -27,12 +25,15 @@ class exports.Server
     @app.use(express.errorHandler({
       dumpExceptions: true, showStack: true
     }))
+    @everyauth.debug = true
 
     #production
     #@app.use(express.errorHandler())
     
     @everyauth = require 'everyauth'
-
+    @Promise = @everyauth.Promise
+    @everyauth.password.loginWith 'email'
+   
 ###################every auth settings#################
     @everyauth
       .google
@@ -44,8 +45,10 @@ class exports.Server
         googleUser.expiresIn = extra.expires_in
         usersByGoogleId[googleUser.id] or (usersByGoogleId[googleUser.id] = addUser('google', googleUser))
       ).redirectPath '/'
+
     exampleUser = new User 'test', 'test@gmail.com', 'test'
-    @usersByLogin = [ { name: 'test', instrument: exampleUser } ]
+    @userTmpList = [ exampleUser ]
+    @user = exampleUser    
 
     @everyauth
       .password
@@ -58,15 +61,14 @@ class exports.Server
           done null,
             title: 'Async login'
         ), 200
-    ).authenticate((login, password) ->
+    ).authenticate((login, password) =>
       errors = []
       errors.push 'Missing login'  unless login
       errors.push 'Missing password'  unless password
       return errors  if errors.length
-      user = @usersByLogin[login]
-      return [ 'Login failed' ]  unless user
-      return [ 'Login failed' ]  if user.password isnt password
-      user
+      return [ 'Login failed, user not defined' ]  unless @user
+      return [ 'Login failed, wrong password' ]  if @user.password isnt password
+      @user
     ).getRegisterPath('/register').postRegisterPath('/register').registerView('register.jade').registerLocals((req, res, done) ->
       setTimeout (->
         done null,
@@ -81,16 +83,32 @@ class exports.Server
 #        errors.push 'Login already taken'  if !err     
       errors   
     ).registerUser((newUserAttrs) =>
-      login = newUserAttrs[@loginKey()]
-      @db.new_user login, (err,new_user)->
+      login = newUserAttrs.login
+      password = newUserAttrs.password
+      console.log "user name is " + login
+      console.log "user password is " + password
+      # TODO verify if login equals emailadress
+      new_user = new User login, login, password
+      
+      @user = new_user
+      @db.new_user login, (err,new_user)->        
         errors = []
-        console.log "Could not create user" if err
-        errors.push 'An unexpected error has occured' if err
+        errors.push 'An error has occured' if err
         return errors  if errors.length
-
+        @userTmpList.push(new_user)
+      return @user
     ).loginSuccessRedirect('/').registerSuccessRedirect '/'
 
+    # get user from memory or db
+    @everyauth.everymodule.findUserById (userId, callback) ->
+      console.log "accessing find user by id: " + userId 
+      callback null, @user
+
+
+
+
     @app.use(@everyauth.middleware())
+    
     @everyauth.helpExpress(@app)    
 
   start: (callback) ->

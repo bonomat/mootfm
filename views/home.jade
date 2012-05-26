@@ -4,11 +4,15 @@
     a(href='/register') Register
   #password-login
     a(href='/login', style='border: 0px') Login with Password
+  #google-login
+    a(href='/auth/google', style='border: 0px')
+      img(style='border: 0px', src='https://www.google.com/favicon.ico')
 - else
   h2 Authenticated
 
   h2 Users
-  pre #{users}
-
+  #user-id
+  label User Id #{everyauth.user} auth #{everyauth.loggedIn} #{user}
+  
   h3
     a(href='/logout') Logout
