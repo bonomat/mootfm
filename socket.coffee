@@ -97,9 +97,9 @@ class exports.Server
         return errors  if errors.length
         @userTmpList.push(new_user)
       return @user
-    ).loginSuccessRedirect('/').registerSuccessRedirect '/'
-
-    # get user from memory or db
+    ).loginSuccessRedirect('/')
+    .registerSuccessRedirect('/login')
+    # TODO get user from memory or db
     @everyauth.everymodule.findUserById (userId, callback) ->
       console.log "accessing find user by id: " + userId 
       callback null, @user
