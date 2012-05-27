@@ -1,5 +1,9 @@
+- if ('undefined' !== typeof errors && errors.length)
+  ul#errors
+    - each error in errors
+      li.error= error
 - if (!everyauth.loggedIn)
-  h2 Not Authenticated
+  h2 Not Authenticated + #{everyauth.loggedIn} + #{everyauth.user} + #{user}
   #register
     a(href='/register') Register
   #password-login

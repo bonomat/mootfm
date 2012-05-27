@@ -3,15 +3,24 @@ class exports.Server
   constructor: (@port) ->
     User = require './models/user'
     DAONeo4j = require './models/dao-neo4j'
-    
+
     @db = new DAONeo4j 'http://localhost:7474'
     express = require 'express'
-    @conf = require './conf'    
+    @conf = require './conf'
+
+    @everyauth = require 'everyauth'
+    @everyauth
+      .everymodule
+      .findUserById (userId, callback) ->
+        console.log "accessing find user by id: " + userId
+        callback null, @user
+    @everyauth.debug = true
+
     @app = express.createServer()
     @app.use express.bodyParser()
 
     @status = 'initialized'
-        
+
     @app.set('views', __dirname + '/views')
     @app.set('view engine', 'jade')
     @app.use(express.bodyParser())
@@ -28,26 +37,26 @@ class exports.Server
 
     #production
     #@app.use(express.errorHandler())
-    
-    @everyauth = require 'everyauth'
 
-    @everyauth.debug = true
+    @user = new User 'test@gmail.com', 'test@gmail.com', 'test'
+    @userTmpList = [ @user ]
 
-   
 ###################every auth settings#################
     @everyauth
       .google
       .appId(@conf.google.clientId)
       .appSecret(@conf.google.clientSecret)
-      .scope('https://www.googleapis.com/auth/userinfo.profile https://www.google.com/m8/feeds/')
+      .callbackPath('/sucess')
+      .scope('https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email')
       .findOrCreateUser (sess, accessToken, extra, googleUser) ->
         googleUser.refreshToken = extra.refresh_token
         googleUser.expiresIn = extra.expires_in
-        usersByGoogleId[googleUser.id] or (usersByGoogleId[googleUser.id] = addUser('google', googleUser))
+        user = new User googleUser.id, googleUser.email, null        
+        console.log "retrieved user " + user.id + " mail: " + user.email
+      
+        return user
       .redirectPath '/'
 
-    @user = new User 'test', 'test@gmail.com', 'test'
-    @userTmpList = [ @user ]
 
     @everyauth
       .password
@@ -67,24 +76,24 @@ class exports.Server
         errors.push 'Missing login'  unless login
         errors.push 'Missing password'  unless password
         errors.push 'Login failed, user not defined' unless @user
-        errors.push 'Login failed, wrong password' if @user.password isnt password        
+        errors.push 'Login failed, wrong password' if @user.password isnt password
         return errors  if errors.length
         return @user
       )
       .getRegisterPath('/register')
       .postRegisterPath('/register')
       .registerView('register.jade')
-      .registerLocals (req, res, done) ->
-        setTimeout (->
-          done null,
-            title: 'mootFM'
-        ), 200
+#      .registerLocals (req, res, done) ->
+#        setTimeout (->
+#          done null,
+#            title: 'mootFM'
+#        ), 200
       .validateRegistration (newUserAttrs, errors) =>
         login = newUserAttrs.login
-        #TODO check if user is in DB      
+        #TODO check if user is in DB
   #      @db.get_user_by_id login, (err, get_user)->
-  #        errors.push 'Login already taken'  if !err     
-        return errors   
+  #        errors.push 'Login already taken'  if !err
+        return errors
       .registerUser (newUserAttrs) =>
         login = newUserAttrs.login
         password = newUserAttrs.password
@@ -92,9 +101,9 @@ class exports.Server
         console.log "user password is " + password
         # TODO verify if login equals emailadress
         new_user = new User login, login, password
-        
+
         @user = new_user
-        @db.new_user login, (err,new_user)->        
+        @db.new_user login, (err,new_user)->
           errors = []
           errors.push 'An error has occured' if err
           return errors  if errors.length
@@ -102,16 +111,10 @@ class exports.Server
         return @user
       .loginSuccessRedirect('/')
       .registerSuccessRedirect('/login')
-      # TODO get user from memory or db
-    @everyauth
-      .everymodule
-        .findUserById (userId, callback) ->
-          console.log "accessing find user by id: " + userId 
-          callback null, @user
-
+      # TODO get user from memory or d
     @app.use(@everyauth.middleware())
-    
-    @everyauth.helpExpress(@app)    
+    @app.use(@app.router);
+    @everyauth.helpExpress(@app)
 
   start: (callback) ->
     console.log 'Server starting'
@@ -119,10 +122,14 @@ class exports.Server
     console.log 'Server listening on port ' + @port
 
     @app.get '/', (req, res) ->
-      console.log req.loggedIn + " " +req.session.loggedIn
-      res.render('home', {} )
-
-
+      console.log(req.user)
+      console.log req.session
+      res.render('home')
+    
+    @app.get 'sucess', (req, res) ->
+      console.log(req.user)
+      console.log req.session
+      res.render('home')
 
     @io = require('socket.io').listen @app
     count = 0
