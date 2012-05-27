@@ -25,14 +25,14 @@ class exports.Server
     @app.use(express.errorHandler({
       dumpExceptions: true, showStack: true
     }))
-    @everyauth.debug = true
 
     #production
     #@app.use(express.errorHandler())
     
     @everyauth = require 'everyauth'
-    @Promise = @everyauth.Promise
-    @everyauth.password.loginWith 'email'
+
+    @everyauth.debug = true
+
    
 ###################every auth settings#################
     @everyauth
@@ -40,15 +40,14 @@ class exports.Server
       .appId(@conf.google.clientId)
       .appSecret(@conf.google.clientSecret)
       .scope('https://www.googleapis.com/auth/userinfo.profile https://www.google.com/m8/feeds/')
-      .findOrCreateUser((sess, accessToken, extra, googleUser) ->
+      .findOrCreateUser (sess, accessToken, extra, googleUser) ->
         googleUser.refreshToken = extra.refresh_token
         googleUser.expiresIn = extra.expires_in
         usersByGoogleId[googleUser.id] or (usersByGoogleId[googleUser.id] = addUser('google', googleUser))
-      ).redirectPath '/'
+      .redirectPath '/'
 
-    exampleUser = new User 'test', 'test@gmail.com', 'test'
-    @userTmpList = [ exampleUser ]
-    @user = exampleUser    
+    @user = new User 'test', 'test@gmail.com', 'test'
+    @userTmpList = [ @user ]
 
     @everyauth
       .password
@@ -61,51 +60,54 @@ class exports.Server
           done null,
             title: 'Async login'
         ), 200
-    ).authenticate((login, password) =>
-      errors = []
-      errors.push 'Missing login'  unless login
-      errors.push 'Missing password'  unless password
-      return errors  if errors.length
-      return [ 'Login failed, user not defined' ]  unless @user
-      return [ 'Login failed, wrong password' ]  if @user.password isnt password
-      @user
-    ).getRegisterPath('/register').postRegisterPath('/register').registerView('register.jade').registerLocals((req, res, done) ->
-      setTimeout (->
-        done null,
-          title: 'Async Register'
-      ), 200
-    ).extractExtraRegistrationParams((req) ->
-      email: req.body.email
-    ).validateRegistration((newUserAttrs, errors) =>
-      login = newUserAttrs.login
-      #TODO check if user is in DB      
-#      @db.get_user_by_id login, (err, get_user)->
-#        errors.push 'Login already taken'  if !err     
-      errors   
-    ).registerUser((newUserAttrs) =>
-      login = newUserAttrs.login
-      password = newUserAttrs.password
-      console.log "user name is " + login
-      console.log "user password is " + password
-      # TODO verify if login equals emailadress
-      new_user = new User login, login, password
-      
-      @user = new_user
-      @db.new_user login, (err,new_user)->        
+      )
+      .authenticate((login, password) =>
+        console.log "authenticating with " + login + " pw: " + password
         errors = []
-        errors.push 'An error has occured' if err
+        errors.push 'Missing login'  unless login
+        errors.push 'Missing password'  unless password
+        errors.push 'Login failed, user not defined' unless @user
+        errors.push 'Login failed, wrong password' if @user.password isnt password        
         return errors  if errors.length
-        @userTmpList.push(new_user)
-      return @user
-    ).loginSuccessRedirect('/')
-    .registerSuccessRedirect('/login')
-    # TODO get user from memory or db
-    @everyauth.everymodule.findUserById (userId, callback) ->
-      console.log "accessing find user by id: " + userId 
-      callback null, @user
-
-
-
+        return @user
+      )
+      .getRegisterPath('/register')
+      .postRegisterPath('/register')
+      .registerView('register.jade')
+      .registerLocals (req, res, done) ->
+        setTimeout (->
+          done null,
+            title: 'mootFM'
+        ), 200
+      .validateRegistration (newUserAttrs, errors) =>
+        login = newUserAttrs.login
+        #TODO check if user is in DB      
+  #      @db.get_user_by_id login, (err, get_user)->
+  #        errors.push 'Login already taken'  if !err     
+        return errors   
+      .registerUser (newUserAttrs) =>
+        login = newUserAttrs.login
+        password = newUserAttrs.password
+        console.log "user name is " + login
+        console.log "user password is " + password
+        # TODO verify if login equals emailadress
+        new_user = new User login, login, password
+        
+        @user = new_user
+        @db.new_user login, (err,new_user)->        
+          errors = []
+          errors.push 'An error has occured' if err
+          return errors  if errors.length
+          @userTmpList.push(new_user)
+        return @user
+      .loginSuccessRedirect('/')
+      .registerSuccessRedirect('/login')
+      # TODO get user from memory or db
+    @everyauth
+      .everymodule
+        .findUserById (userId, callback) ->
+          console.log "accessing find user by id: " + userId 
+          callback null, @user
 
     @app.use(@everyauth.middleware())
     
@@ -117,7 +119,8 @@ class exports.Server
     console.log 'Server listening on port ' + @port
 
     @app.get '/', (req, res) ->
-      res.render('home', { users: JSON.stringify(@usersByLogin, null, 2) } )
+      console.log req.loggedIn + " " +req.session.loggedIn
+      res.render('home', {} )
 
 
 
