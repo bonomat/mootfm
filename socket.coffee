@@ -47,7 +47,6 @@ class exports.Server
       .google
       .appId(@conf.google.clientId)
       .appSecret(@conf.google.clientSecret)
-#      .callbackPath('/success')
       .scope('https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email')
       .findOrCreateUser (sess, accessToken, extra, googleUser) =>
         googleUser.refreshToken = extra.refresh_token
@@ -61,23 +60,21 @@ class exports.Server
       .twitter
       .consumerKey(@conf.twit.consumerKey)
       .consumerSecret(@conf.twit.consumerSecret)
-#      .callbackPath('/success')
       .findOrCreateUser (sess, accessToken, accessSecret, twitUser) ->
         console.log "retrieved twitter info"
         console.log twitUser
         user = new User twitUser.name, twitUser.screen_name, null
-        return user
+        return twitUser
       .redirectPath '/'
     
     @everyauth
       .facebook
       .appId(@conf.fb.appId)
       .appSecret(@conf.fb.appSecret)
-      .callbackPath('/success')
       .findOrCreateUser (session, accessToken, accessTokenExtra, fbUserMetadata) ->
         console.log "retrieved facebook info"
         console.log fbUserMetadata
-        user = new User
+        user = new User fbUserMetadata.username, fbUserMetadata.username, fbUserMetadata.username
         return user
       .redirectPath '/'
 
@@ -145,12 +142,12 @@ class exports.Server
     console.log 'Server listening on port ' + @port
 
     @app.get '/', (req, res) ->
-      console.log(req.user)
+      console.log req.user
       console.log req.session
       res.render('home')
     
     @app.get 'success', (req, res) ->
-      console.log(req.user)
+      console.log req.user
       console.log req.session
       res.render('home')
 
