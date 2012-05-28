@@ -8,11 +8,14 @@ class exports.Server
     express = require 'express'
     @conf = require './conf'
 
+    @user = new User 'test@gmail.com', 'test@gmail.com', 'test'
+    @userTmpList = [ @user ]
+
     @everyauth = require 'everyauth'
     @Promise = @everyauth.Promise
     @everyauth
       .everymodule
-      .findUserById (userId, callback) ->
+      .findUserById (userId, callback) =>
         console.log "accessing find user by id: " + userId
         callback null, @user
     @everyauth.debug = true
@@ -38,9 +41,6 @@ class exports.Server
 
     #production
     #@app.use(express.errorHandler())
-
-    @user = new User 'test@gmail.com', 'test@gmail.com', 'test'
-    @userTmpList = [ @user ]
 
 ###################every auth settings#################
     @everyauth
@@ -103,11 +103,11 @@ class exports.Server
       .getRegisterPath('/register')
       .postRegisterPath('/register')
       .registerView('register.jade')
-#      .registerLocals (req, res, done) ->
-#        setTimeout (->
-#          done null,
-#            title: 'mootFM'
-#        ), 200
+      .registerLocals (req, res, done) ->
+        setTimeout (->
+          done null,
+            title: 'mootFM'
+        ), 200
       .validateRegistration (newUserAttrs, errors) =>
         login = newUserAttrs.login
         #TODO check if user is in DB
@@ -133,7 +133,7 @@ class exports.Server
       .registerSuccessRedirect('/login')
       # TODO get user from memory or d
     @app.use(@everyauth.middleware())
-    @app.use(@app.router);
+    @app.use(@app.router)
     @everyauth.helpExpress(@app)
 
   start: (callback) ->
