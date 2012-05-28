@@ -9,6 +9,7 @@ class exports.Server
     @conf = require './conf'
 
     @everyauth = require 'everyauth'
+    @Promise = @everyauth.Promise
     @everyauth
       .everymodule
       .findUserById (userId, callback) ->
@@ -46,17 +47,39 @@ class exports.Server
       .google
       .appId(@conf.google.clientId)
       .appSecret(@conf.google.clientSecret)
-      .callbackPath('/sucess')
+#      .callbackPath('/success')
       .scope('https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email')
-      .findOrCreateUser (sess, accessToken, extra, googleUser) ->
+      .findOrCreateUser (sess, accessToken, extra, googleUser) =>
         googleUser.refreshToken = extra.refresh_token
         googleUser.expiresIn = extra.expires_in
         user = new User googleUser.id, googleUser.email, null        
         console.log "retrieved user " + user.id + " mail: " + user.email
-      
         return user
       .redirectPath '/'
 
+    @everyauth
+      .twitter
+      .consumerKey(@conf.twit.consumerKey)
+      .consumerSecret(@conf.twit.consumerSecret)
+#      .callbackPath('/success')
+      .findOrCreateUser (sess, accessToken, accessSecret, twitUser) ->
+        console.log "retrieved twitter info"
+        console.log twitUser
+        user = new User twitUser.name, twitUser.screen_name, null
+        return user
+      .redirectPath '/'
+    
+    @everyauth
+      .facebook
+      .appId(@conf.fb.appId)
+      .appSecret(@conf.fb.appSecret)
+      .callbackPath('/success')
+      .findOrCreateUser (session, accessToken, accessTokenExtra, fbUserMetadata) ->
+        console.log "retrieved facebook info"
+        console.log fbUserMetadata
+        user = new User
+        return user
+      .redirectPath '/'
 
     @everyauth
       .password
@@ -126,7 +149,7 @@ class exports.Server
       console.log req.session
       res.render('home')
     
-    @app.get 'sucess', (req, res) ->
+    @app.get 'success', (req, res) ->
       console.log(req.user)
       console.log req.session
       res.render('home')
