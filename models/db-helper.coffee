@@ -7,7 +7,7 @@ module.exports = class DatabaseHelper
 
   get_node_by_id: (id,callback) ->
     @db.getNodeById id, callback
-      
+
   delete_node_by_id: (id,callback) ->
     query = "START nodes = node(#{id}) RETURN nodes"
     @db.query query, (err,results) ->
@@ -16,11 +16,11 @@ module.exports = class DatabaseHelper
         result["nodes"].del callback, true
       ), (err) ->
         callback err
-        
+
   create_node: (data, callback)->
     node = @db.createNode data
     node.save (err) ->
-      return callback err if err 
+      return callback err if err
       callback null,node
 
   get_all_node_ids: (callback) ->
@@ -31,10 +31,6 @@ module.exports = class DatabaseHelper
       for result in results
         ids[ids.length]=result["nodes"]["id"]
       callback null, ids
-    
+
   delete_all_nodes: (callback) ->
     @delete_node_by_id "*",callback
-    
-  new_relationship: (node1, node2, side, callback)->
-    node.createRelationshipTo node2, side, {}, callback
-    
