@@ -2,9 +2,7 @@ class exports.Server
 
   constructor: (@port) ->
     User = require './models/user'
-    DAONeo4j = require './models/dao-neo4j'
 
-    @db = new DAONeo4j 'http://localhost:7474'
     express = require 'express'
 
     @user = new User 'test@gmail.com', 'test@gmail.com', 'test'

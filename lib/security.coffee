@@ -2,7 +2,7 @@ class exports.Security
   
     init: (cb) ->
       @everyauth = require 'everyauth'
-      User = require '../models/user'
+      User = require "../models/user"
       @conf = require './conf'
       @Promise = @everyauth.Promise
       @everyauth.debug = true
@@ -12,7 +12,10 @@ class exports.Security
         .everymodule
         .findUserById (userId, callback) =>
           console.log "accessing find user by id: " + userId
-          callback null, @user      
+          User.get create_user.id, (err,get_user)->
+            #TODO redirect to user not found
+            console.log err if err
+            callback null, get_user
 
       @everyauth
       .google
@@ -22,10 +25,16 @@ class exports.Security
       .findOrCreateUser (sess, accessToken, extra, googleUser) =>
         googleUser.refreshToken = extra.refresh_token
         googleUser.expiresIn = extra.expires_in
-        user = new User googleUser.id, googleUser.email, null        
-        console.log "retrieved user " + user.id + " mail: " + user.email
-        @user = user
-        return user
+        user_data=
+          name: googleUser.id
+          email: googleUser.email
+          password: "TODO"
+        @user = {}
+        User.create user_data, (err,user)=>
+          return err if err          
+          console.log user
+          @user = user
+        return @user
       .redirectPath '/'
 
       @everyauth
@@ -33,11 +42,16 @@ class exports.Security
         .consumerKey(@conf.twit.consumerKey)
         .consumerSecret(@conf.twit.consumerSecret)
         .findOrCreateUser (sess, accessToken, accessSecret, twitUser) ->
-          console.log "retrieved twitter info"
-          console.log twitUser
-          user = new User twitUser.name, twitUser.screen_name, null
-          @user = user
-          return user
+          @user = {}
+          user_data=
+            name: twitUser.name
+            email: "TODO"
+            password: "TODO"
+          User.create user_data, (err,user)=>
+            return err if err          
+            console.log user
+            @user = user
+          return @user
         .redirectPath '/'
 
       @everyauth
