@@ -12,7 +12,7 @@ module.exports = class DatabaseHelper
     query = "START nodes = node(#{id}) RETURN nodes"
     @db.query query, (err,results) ->
       return callback err if err
-      async.forEach results, ((result, callback) ->
+      async.forEachSeries results, ((result, callback) ->
         result["nodes"].del callback, true
       ), (err) ->
         callback err
