@@ -83,9 +83,9 @@ Statement.get = (id, callback) ->
 # creates the statement and persists (saves) it to the db, incl. indexing it:
 Statement.create = (data, callback) ->
   node = db.createNode(data)
-  user = new Statement(node)
+  statement = new Statement(node)
   node.save (err) ->
     return callback(err)  if err
     node.index INDEX_NAME, INDEX_KEY, INDEX_VAL, (err) ->
       return callback(err)  if err
-      callback null, user
+      callback null, statement
