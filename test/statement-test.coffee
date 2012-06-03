@@ -1,7 +1,6 @@
 should=require 'should'
 async = require "async"
 Statement = require "../models/statement"
-User = require "../models/user"
 
 DatabaseHelper = require "../models/db-helper"
 
