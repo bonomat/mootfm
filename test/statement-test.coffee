@@ -89,6 +89,22 @@ describe "Statement:", ->
           all_arguments["pro"][0].title.should.equal "Apple has child labour in China"
           done()
 
+  it "unargue", (done)->
+    statement_data=
+      title: "Apple is crap"
+    pro_statement_data=
+      title: "Apple has child labour in China"
+    async.map [statement_data, pro_statement_data ], (item,callback)->
+      Statement.create item, callback
+    , (err, [statement, pro_statement ]) ->
+      return done(err) if err
+      pro_statement.argue statement, "pro", (err)->
+        pro_statement.unargue statement, "pro", (err)->
+          statement.getArguments (err, all_arguments)->
+            return done(err) if err
+            all_arguments.should.eql {}
+            done()
+
 
 #  it "create new argument", (done)->
 #    db.new_statement "Apple is crap", (err,apple_statement)->

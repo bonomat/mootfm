@@ -66,8 +66,8 @@ Statement::getArguments = (callback) ->
     return callback(err)  if err
     sides = {}
     i = 0
-    side_list = [result["TYPE(side)"] for result in results]
-    for side in side_list
+    side_list = (result["TYPE(side)"] for result in results)
+    for side in side_list when side
       sides[side]=[]
     for result in results
       sides[result["TYPE(side)"]].push new Statement(result["arguments"])
