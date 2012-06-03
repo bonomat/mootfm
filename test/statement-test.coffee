@@ -73,6 +73,19 @@ describe "Statement:", ->
           should.exist(err)
           done()
 
+  it "argue", (done)->
+    statement_data=
+      title: "Apple is crap"
+    pro_statement_data=
+      title: "Apple has child labour in China"
+
+    async.map [statement_data, pro_statement_data ], (item,callback)->
+      console.log "async map", item
+      Statement.create item, callback
+    , (err, [statement, pro_statement ]) ->
+      console.log "async finish", statement,pro_statement
+      return done(err) if err
+      pro_statement.argue statement, "pro", done
 
 #  it "create new argument", (done)->
 #    db.new_statement "Apple is crap", (err,apple_statement)->

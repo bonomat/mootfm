@@ -97,7 +97,7 @@ Statement.getAll = (callback) ->
   db.getIndexedNodes INDEX_NAME, INDEX_KEY, INDEX_VAL, (err, nodes) ->
     return callback(null, [])  if err
     users = nodes.map((node) ->
-      new User(node)
+      new Statement(node)
     )
     callback null, users
 
