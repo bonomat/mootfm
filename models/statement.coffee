@@ -57,31 +57,24 @@ Statement::unargue = (other,side, callback) ->
 
 # calls callback w/ (err, following, others) where following is an array of
 # users this user follows, and others is all other users minus him/herself.
-Statement::getFollowingAndOthers = (callback) ->
+Statement::getArguments = (callback) ->
   query ="
-    START user=node(#{@id}), other=node:#{INDEX_NAME}(#{INDEX_KEY}=\"#{INDEX_VAL}\")
-    MATCH (user) -[rel?:#{FOLLOWS_REL}]-> (other)
-    RETURN other, COUNT(rel)
+    START statement=node(#{@id}), arguments=node:#{INDEX_NAME}(#{INDEX_KEY}=\"#{INDEX_VAL}\")
+    MATCH (arguments) -[side]-> (statement)
+    RETURN arguments, TYPE(side)
     "
   user = this
-  db.query ((err, results) ->
+  db.query query, (err, results) ->
     return callback(err)  if err
-    following = []
-    others = []
+    sides = {}
     i = 0
+    side_list = [result["TYPE(side)"] for result in results]
+    for side in side_list
+      sides[side]=[]
+    for result in results
+      sides[result["TYPE(side)"]].push new Statement(result["arguments"])
+    callback null, sides
 
-    while i < results.length
-      other = new User(results[i]["other"])
-      follows = results[i]["count(rel)"]
-      if user.id is other.id
-        continue
-      else if follows
-        following.push other
-      else
-        others.push other
-      i++
-    callback null, following, others
-  ), query
 
 # static methods:
 
@@ -90,16 +83,16 @@ Statement.get = (id, callback) ->
     return callback(err)  if err
     callback null, new Statement(node)
 
-Statement.getAll = (callback) ->
-# if (err) return callback(err);
-# XXX FIXME the index might not exist in the beginning, so special-case
-# this error detection. warning: this is super brittle!!
-  db.getIndexedNodes INDEX_NAME, INDEX_KEY, INDEX_VAL, (err, nodes) ->
-    return callback(null, [])  if err
-    users = nodes.map((node) ->
-      new Statement(node)
-    )
-    callback null, users
+#Statement.getAll = (callback) ->
+ #if (err) return callback(err);
+ #XXX FIXME the index might not exist in the beginning, so special-case
+ #this error detection. warning: this is super brittle!!
+  #db.getIndexedNodes INDEX_NAME, INDEX_KEY, INDEX_VAL, (err, nodes) ->
+    #return callback(null, [])  if err
+    #users = nodes.map((node) ->
+      #new Statement(node)
+    #)
+    #callback null, users
 
 # creates the user and persists (saves) it to the db, incl. indexing it:
 Statement.create = (data, callback) ->

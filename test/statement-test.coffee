@@ -82,7 +82,13 @@ describe "Statement:", ->
       Statement.create item, callback
     , (err, [statement, pro_statement ]) ->
       return done(err) if err
-      pro_statement.argue statement, "pro", done
+      pro_statement.argue statement, "pro", (err)->
+        statement.getArguments (err, all_arguments)->
+          return done(err) if err
+          all_arguments.should.have.ownProperty "pro"
+          all_arguments["pro"][0].title.should.equal "Apple has child labour in China"
+          done()
+
 
 #  it "create new argument", (done)->
 #    db.new_statement "Apple is crap", (err,apple_statement)->
