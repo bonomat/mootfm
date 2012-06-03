@@ -31,8 +31,7 @@ class exports.Security
           password: "TODO"
         @user = {}
         User.create user_data, (err,user)=>
-          return err if err          
-          console.log user
+          return err if err    
           @user = user
         return @user
       .redirectPath '/'
@@ -48,8 +47,7 @@ class exports.Security
             email: "TODO"
             password: "TODO"
           User.create user_data, (err,user)=>
-            return err if err          
-            console.log user
+            return err if err      
             @user = user
           return @user
         .redirectPath '/'
@@ -61,9 +59,15 @@ class exports.Security
         .findOrCreateUser (session, accessToken, accessTokenExtra, fbUserMetadata) ->
           console.log "retrieved facebook info"
           console.log fbUserMetadata
-          user = new User fbUserMetadata.username, fbUserMetadata.username, fbUserMetadata.username
-          @user = user
-          return user
+          @user = {}
+          user_data=
+            name: fbUserMetadata.username
+            email: "TODO"
+            password: "TODO"
+          User.create user_data, (err,user)=>
+            return err if err      
+            @user = user
+          return @user
         .redirectPath '/'
 
       @everyauth
@@ -105,20 +109,16 @@ class exports.Security
         .registerUser (newUserAttrs) =>
           login = newUserAttrs.login
           password = newUserAttrs.password
-          console.log "user name is " + login
-          console.log "user password is " + password
-          # TODO verify if login equals emailadress
-          new_user = new User login, login, password
-
-          @user = new_user
-          @db.new_user login, (err,new_user)->
-            errors = []
-            errors.push 'An error has occured' if err
-            return errors  if errors.length
-          @user = new_user
+          @user = {}
+          user_data=
+            name: "TODO"
+            email: login
+            password: password
+          User.create user_data, (err,user)=>
+            return err if err      
+            @user = user
           return @user
         .loginSuccessRedirect('/')
         .registerSuccessRedirect('/login')
-        # TODO get user from memory or d
       cb null, @everyauth
   
