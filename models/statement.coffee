@@ -55,8 +55,6 @@ Statement::unargue = (other,side, callback) ->
     return callback(null)  unless rel
     rel["delete"] callback
 
-# calls callback w/ (err, following, others) where following is an array of
-# users this user follows, and others is all other users minus him/herself.
 Statement::getArguments = (callback) ->
   query ="
     START statement=node(#{@id}), arguments=node:#{INDEX_NAME}(#{INDEX_KEY}=\"#{INDEX_VAL}\")
@@ -74,7 +72,6 @@ Statement::getArguments = (callback) ->
     for result in results
       sides[result["TYPE(side)"]].push new Statement(result["arguments"])
     callback null, sides
-
 
 # static methods:
 
@@ -94,7 +91,7 @@ Statement.get = (id, callback) ->
     #)
     #callback null, users
 
-# creates the user and persists (saves) it to the db, incl. indexing it:
+# creates the statement and persists (saves) it to the db, incl. indexing it:
 Statement.create = (data, callback) ->
   node = db.createNode(data)
   user = new Statement(node)
