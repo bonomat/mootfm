@@ -80,17 +80,6 @@ Statement.get = (id, callback) ->
     return callback(err)  if err
     callback null, new Statement(node)
 
-#Statement.getAll = (callback) ->
- #if (err) return callback(err);
- #XXX FIXME the index might not exist in the beginning, so special-case
- #this error detection. warning: this is super brittle!!
-  #db.getIndexedNodes INDEX_NAME, INDEX_KEY, INDEX_VAL, (err, nodes) ->
-    #return callback(null, [])  if err
-    #users = nodes.map((node) ->
-      #new Statement(node)
-    #)
-    #callback null, users
-
 # creates the statement and persists (saves) it to the db, incl. indexing it:
 Statement.create = (data, callback) ->
   node = db.createNode(data)
