@@ -34,7 +34,6 @@ class exports.Server
     #@app.use(express.errorHandler())    
     security = new Security
     security.init (error, callback) =>
-      console.log "init was called with " + callback
       @app.use(callback.middleware())    
       @app.use(@app.router)  
       callback.helpExpress(@app)

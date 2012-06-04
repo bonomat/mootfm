@@ -7,34 +7,42 @@ class exports.Security
       @Promise = @everyauth.Promise
       @everyauth.debug = true
       
-      @user = {}
+
       @everyauth
         .everymodule
         .findUserById (userId, callback) =>
           console.log "accessing find user by id: " + userId
-          User.get create_user.id, (err,get_user)->
+          @user = {}          
+          User.get userId, (err,get_user)=>
             #TODO redirect to user not found
             console.log err if err
-            callback null, get_user
+            @user = get_user
+          callback null, @user
 
       @everyauth
       .google
       .appId(@conf.google.clientId)
       .appSecret(@conf.google.clientSecret)
       .scope('https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email')
-      .findOrCreateUser (sess, accessToken, extra, googleUser) =>
+      .findOrCreateUser (sess, accessToken, extra, googleUser, data) =>
         googleUser.refreshToken = extra.refresh_token
         googleUser.expiresIn = extra.expires_in
-        user_data=
-          name: googleUser.id
-          email: googleUser.email
-          password: "TODO"
         @user = {}
-        User.create user_data, (err,user)=>
-          return err if err    
-          @user = user
+        User.find_by_google_id googleUser.id, (err, user) ->
+          if err
+            sess.user_data =
+              name: null
+              email: googleUser.email
+              password: null
+              google_id: googleUser.id
+          else
+            @user = user
+          #sess.user_data = user_data if err
         return @user
-      .redirectPath '/'
+      .sendResponse  (res, data) =>
+        if (! user)
+          return res.redirect('/register')
+        res.redirect('/')
 
       @everyauth
         .twitter
