@@ -31,7 +31,7 @@ class exports.Security
         User.find_by_google_id googleUser.id, (err, user) ->
           if err
             sess.user_data =
-              name: null
+              username: null
               email: googleUser.email
               password: null
               google_id: googleUser.id
@@ -40,7 +40,8 @@ class exports.Security
           #sess.user_data = user_data if err
         return @user
       .sendResponse  (res, data) =>
-        if (! user)
+        user_data = data.session.user_data
+        if (! user_data)
           return res.redirect('/register')
         res.redirect('/')
 
@@ -51,7 +52,7 @@ class exports.Security
         .findOrCreateUser (sess, accessToken, accessSecret, twitUser) ->
           @user = {}
           user_data=
-            name: twitUser.name
+            username: twitUser.name
             email: "TODO"
             password: "TODO"
           User.create user_data, (err,user)=>
@@ -69,7 +70,7 @@ class exports.Security
           console.log fbUserMetadata
           @user = {}
           user_data=
-            name: fbUserMetadata.username
+            username: fbUserMetadata.username
             email: "TODO"
             password: "TODO"
           User.create user_data, (err,user)=>
@@ -84,12 +85,26 @@ class exports.Security
         .getLoginPath('/login')
         .postLoginPath('/login')
         .loginView('login.jade')
-        .loginLocals((req, res, done) ->
+        .loginLocals (req, res, done) ->
           setTimeout (->
             done null,
               title: 'Async login'
           ), 200
-        )
+        .extractExtraRegistrationParams (req) ->
+          return {
+            email: req.body.email
+            googe_id: req.body.google_id
+            facebook_id: req.body.facebook_id
+            twitter_id: req.body.twitter_id
+          }
+        .displayRegister (req, res, data) ->
+          ############## extract google data ###########
+          userParams = {}
+          if req.session.auth.google
+            user = req.session.auth.google.user
+            userParams.google_id = user.id
+            userParams.email = user.email         
+          res.render('register', { userParams: userParams })
         .authenticate((login, password) =>
           console.log "authenticating with " + login + " pw: " + password
           errors = []
@@ -119,7 +134,7 @@ class exports.Security
           password = newUserAttrs.password
           @user = {}
           user_data=
-            name: "TODO"
+            username: "TODO"
             email: login
             password: password
           User.create user_data, (err,user)=>

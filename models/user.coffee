@@ -24,9 +24,12 @@ proxyProperty = (prop, isData) ->
 # constants:
 proxyProperty "id"
 proxyProperty "exists"
-proxyProperty "name", true
+proxyProperty "username", true
 proxyProperty "email", true
 proxyProperty "password", true
+proxyProperty "google_id"
+proxyProperty "twitter_id"
+proxyProperty "facebook_id"
 
 User::save = (callback) ->
   @_node.save callback
@@ -37,6 +40,11 @@ User::del = (callback) ->
 # static methods:
 
 User.get = (id, callback) ->
+  db.getNodeById id, (err, node) ->
+    return callback(err)  if err
+    callback null, new User(node)
+
+User.find_by_google_id = (id, callback) -> #TODO method needs to be implemented
   db.getNodeById id, (err, node) ->
     return callback(err)  if err
     callback null, new User(node)
