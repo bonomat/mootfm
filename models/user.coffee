@@ -29,6 +29,10 @@ proxyProperty "exists"
 proxyProperty "name", true
 proxyProperty "email", true
 proxyProperty "password", true
+proxyProperty "twitter_id", true
+proxyProperty "google_id", true
+proxyProperty "facebook_id", true
+
 
 User::save = (callback) ->
   @_node.save callback
@@ -42,6 +46,34 @@ User.get = (id, callback) ->
   db.getNodeById id, (err, node) ->
     return callback(err)  if err
     callback null, new User(node)
+
+User.get_by_email = (email, callback) ->
+  db.getNodeById id, (err, node) ->
+    return callback(err)  if err
+    callback null, new User(node)
+
+User._get_by_property = (property, value, callback) ->
+  query = "
+    START n=node:#{INDEX_NAME}(#{INDEX_KEY}= \"#{INDEX_VAL}\")
+    WHERE n.#{property} = \"#{value}\"
+    RETURN n
+  "
+  db.query query, (err, results) ->
+    return callback(err) if err
+    node = results[0] and results[0]["n"]
+    callback null, new User(node)
+
+User.get_by_email = (email, callback) ->
+  User._get_by_property "email", email, callback
+
+User.get_by_twitter_id = (twitter_id, callback) ->
+  User._get_by_property "twitter_id", twitter_id, callback
+
+User.get_by_google_id = (google_id, callback) ->
+  User._get_by_property "google_id", google_id, callback
+
+User.get_by_facebook_id = (facebook_id, callback) ->
+  User._get_by_property "facebook_id", facebook_id, callback
 
 # creates the statement and persists (saves) it to the db, incl. indexing it:
 User.create = (data, callback) ->

@@ -44,9 +44,42 @@ describe "User:", ->
       return done(err) if err
       create_user.exists.should.be.true
       User.get create_user.id, (err,get_user)->
+        return done(err) if err
         get_user.should.eql create_user
         get_user.name.should.eql "Tobias Hönisch"
         done()
+
+  it "get user functions", (done)->
+    user_data=
+      name: "Tobias Hönisch"
+      email: "tobias@hoenisch.at"
+      password: "ultrasafepassword"
+      twitter_id: "123412341234"
+      google_id: "googleid1231234"
+      facebook_id: "facebookskrasseid"
+    user_data2=
+      name: "Franzi"
+      email: "franzi@moot.fm"
+      password: "sexyhasi21"
+      twitter_id: "franztwitter"
+      google_id: "googlefranz"
+      facebook_id: "facebookfranz"
+    User.create user_data, (err,create_user)->
+      return done(err) if err
+      User.create user_data2, (err,user2)->
+        return done(err) if err
+        create_user.exists.should.be.true
+        async.parallel [
+          (callback) -> User.get_by_twitter_id user_data.twitter_id, callback
+          (callback) -> User.get_by_google_id user_data.google_id, callback
+          (callback) -> User.get_by_facebook_id user_data.facebook_id, callback
+          (callback) -> User.get_by_email user_data.email, callback
+         ], (err, db_users) ->
+          return done(err) if err
+          for user in db_users
+            user.should.eql create_user
+            user.twitter_id.should.eql "123412341234"
+          done()
 
   it "save user", (done)->
     user_data=
