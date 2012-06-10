@@ -26,6 +26,7 @@ proxyProperty = (prop, isData) ->
 # constants:
 proxyProperty "id"
 proxyProperty "exists"
+proxyProperty "name", true
 proxyProperty "username", true
 proxyProperty "email", true
 proxyProperty "password", true
@@ -84,3 +85,17 @@ User.create = (data, callback) ->
     node.index INDEX_NAME, INDEX_KEY, INDEX_VAL, (err) ->
       return callback(err)  if err
       callback null, user
+
+User.find_or_create_google_user = (google_user, callback) ->
+  User.get_by_google_id google_user.id, (err, user) ->
+    if err
+      user_data=
+        google_id: google_user.id
+        email: google_user.email
+        name: google_user.name
+      User.create user_data, (err2, user2)->        
+        callback err,null if err2
+        callback null, user2
+    else
+      callback null, user
+

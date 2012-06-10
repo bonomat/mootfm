@@ -117,4 +117,17 @@ describe "User:", ->
           should.exist(err)
           done()
 
+  it "tests find an existing google user by using the wrapper method", (done)->
+    google_user=
+      name: "Tobias Hönisch"
+      email: "tobias@hoenisch.at"
+      id: "unknownGoogleID"
+    User.find_or_create_google_user google_user, (err, create_user)->
+      return done(err) if err
+      create_user.exists.should.be.true
+      User.get_by_google_id google_user.id,(err, db_users) ->
+        return done(err) if err
+        db_users.email.should.eql "tobias@hoenisch.at"
+        db_users.google_id.should.eql "unknownGoogleID"
+        done()
 
