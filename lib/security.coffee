@@ -4,9 +4,9 @@ class exports.Security
       @everyauth = require 'everyauth'
       User = require "../models/user"
       @conf = require './conf'
-      @Promise = @everyauth.Promise
+      Promise = @everyauth.Promise
       @everyauth.debug = true
-      
+      console.log Promise
 
       @everyauth
         .everymodule
@@ -27,21 +27,24 @@ class exports.Security
       .findOrCreateUser (sess, accessToken, extra, googleUser, data) =>
         googleUser.refreshToken = extra.refresh_token
         googleUser.expiresIn = extra.expires_in
+        #Promise = @everyauth.Promise
+        #console.log Promise
+        #console.log "----"
+        #promise = Promise()
+        #console.log promise
+        #console.log "----"
         @user = {}
         User.find_by_google_id googleUser.id, (err, user) ->
           if err
-            sess.user_data =
-              username: null
-              email: googleUser.email
-              password: null
-              google_id: googleUser.id
+            sess.user_exists = false
+            @user = null
           else
             @user = user
           #sess.user_data = user_data if err
         return @user
       .sendResponse  (res, data) =>
-        user_data = data.session.user_data
-        if (! user_data)
+        user_exists = data.session.user_exists
+        if (! user_exists)
           return res.redirect('/register')
         res.redirect('/')
 
@@ -81,6 +84,8 @@ class exports.Security
 
       @everyauth
         .password
+        .loginHumanName('username')
+        .loginKey('username')
         .loginWith('login')
         .getLoginPath('/login')
         .postLoginPath('/login')
@@ -93,17 +98,19 @@ class exports.Security
         .extractExtraRegistrationParams (req) ->
           return {
             email: req.body.email
-            googe_id: req.body.google_id
+            google_id: req.body.google_id
             facebook_id: req.body.facebook_id
             twitter_id: req.body.twitter_id
           }
         .displayRegister (req, res, data) ->
-          ############## extract google data ###########
           userParams = {}
+          ############## extract google data ###########
           if req.session.auth.google
             user = req.session.auth.google.user
             userParams.google_id = user.id
-            userParams.email = user.email         
+            userParams.email = user.email
+          console.log "passing following data to registration form "
+          console.log userParams
           res.render('register', { userParams: userParams })
         .authenticate((login, password) =>
           console.log "authenticating with " + login + " pw: " + password
@@ -130,6 +137,8 @@ class exports.Security
     #        errors.push 'Login already taken'  if !err
           return errors
         .registerUser (newUserAttrs) =>
+          console.log "got following attributes"
+          console.log newUserAttrs
           login = newUserAttrs.login
           password = newUserAttrs.password
           @user = {}
