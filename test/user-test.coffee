@@ -131,3 +131,18 @@ describe "User:", ->
         db_users.google_id.should.eql "unknownGoogleID"
         done()
 
+
+  it "tests find an existing twitter user by using the wrapper method", (done)->
+    twitter_user=
+      name: "Tobias Hönisch"
+      screen_name: "twitterUsername"
+      id: "unknownTwitterID"
+    User.find_or_create_twitter_user twitter_user, (err, create_user)->
+      return done(err) if err
+      create_user.exists.should.be.true
+      User.get_by_twitter_id twitter_user.id,(err, db_users) ->
+        return done(err) if err
+        db_users.username.should.eql "twitterUsername"
+        db_users.twitter_id.should.eql "unknownTwitterID"
+        done()
+

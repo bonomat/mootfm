@@ -67,6 +67,9 @@ User._get_by_property = (property, value, callback) ->
 User.get_by_email = (email, callback) ->
   User._get_by_property "email", email, callback
 
+User.get_by_username = (username, callback) ->
+  User._get_by_property "username", username, callback
+
 User.get_by_twitter_id = (twitter_id, callback) ->
   User._get_by_property "twitter_id", twitter_id, callback
 
@@ -98,4 +101,20 @@ User.find_or_create_google_user = (google_user, callback) ->
         callback null, user2
     else
       callback null, user
+
+User.find_or_create_twitter_user = (twitter_user, callback) ->
+  User.get_by_twitter_id twitter_user.id, (err, user) ->
+    if err
+      user_data=
+        twitter_id: twitter_user.id
+        email: twitter_user.email
+        username: twitter_user.screen_name
+        name: twitter_user.name
+      User.create user_data, (err2, user2)-> 
+        callback err, null if err2
+        callback null, user2
+    else
+      callback null, user
+
+
 
