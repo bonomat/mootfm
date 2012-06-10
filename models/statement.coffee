@@ -34,11 +34,10 @@ Statement::_getFollowingRel = (other, side, callback) ->
     MATCH (statement) -[rel?:#{side}]-> (other)
     RETURN rel
   "
-  db.query ((err, results) ->
+  db.query query,(err, results) ->
     return callback(err) if err
     rel = results[0] and results[0]["rel"]
     callback null, rel
-  ), query
 
 Statement::save = (callback) ->
   @_node.save callback
