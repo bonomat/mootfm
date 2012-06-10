@@ -4,9 +4,7 @@ class exports.Security
       @everyauth = require 'everyauth'
       User = require "../models/user"
       @conf = require './conf'
-      Promise = @everyauth.Promise
       @everyauth.debug = true
-      console.log Promise
 
       @everyauth
         .everymodule
@@ -23,29 +21,31 @@ class exports.Security
       .google
       .appId(@conf.google.clientId)
       .appSecret(@conf.google.clientSecret)
-      .scope('https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email')
+      .scope('https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/plus.me')
       .findOrCreateUser (sess, accessToken, extra, googleUser, data) =>
         googleUser.refreshToken = extra.refresh_token
         googleUser.expiresIn = extra.expires_in
-        #Promise = @everyauth.Promise
-        #console.log Promise
-        #console.log "----"
-        #promise = Promise()
-        #console.log promise
-        #console.log "----"
         @user = {}
-        User.find_by_google_id googleUser.id, (err, user) ->
+        error = []
+        User.get_by_google_id googleUser.id, (err, user) ->
           if err
-            sess.user_exists = false
-            @user = null
+            userParams =
+              google_id: googleUser.id
+              email: googleUser.email
+              username: googleUser.name            
+            User.create user_data, (err,user)->
+              console.log err if err
+              error.push "could not login user" if err
+              @user = user if !err
           else
             @user = user
-          #sess.user_data = user_data if err
         return @user
-      .sendResponse  (res, data) =>
-        user_exists = data.session.user_exists
-        if (! user_exists)
-          return res.redirect('/register')
+        .sendResponse  (res, data) =>
+          user_exists = data.session.user
+          if (user_exists)
+            return res.redirect('/account')
+          else 
+            return res.redirect('/') #TODO show not logged in sign MOOTFM-32
         res.redirect('/')
 
       @everyauth
