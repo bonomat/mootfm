@@ -27,26 +27,17 @@ class exports.Security
         googleUser.expiresIn = extra.expires_in
         @user = {}
         error = []
-        User.get_by_google_id googleUser.id, (err, user) ->
-          if err
-            userParams =
-              google_id: googleUser.id
-              email: googleUser.email
-              username: googleUser.name            
-            User.create user_data, (err,user)->
-              console.log err if err
-              error.push "could not login user" if err
-              @user = user if !err
-          else
-            @user = user
+        User.find_or_create_google_user googleUser, (err, user) ->
+          error.push err if err
+          @user = user if !err
         return @user
-        .sendResponse  (res, data) =>
-          user_exists = data.session.user
-          if (user_exists)
-            return res.redirect('/account')
-          else 
-            return res.redirect('/') #TODO show not logged in sign MOOTFM-32
-        res.redirect('/')
+      .sendResponse  (res, data) =>
+        user_exists = data.session.user
+        if (user_exists)
+          return res.redirect('/account')
+        else 
+          return res.redirect('/') #TODO show not logged in sign MOOTFM-32
+        
 
       @everyauth
         .twitter
