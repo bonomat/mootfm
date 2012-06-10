@@ -32,7 +32,7 @@ class exports.Security
             @user = user if !err
           return @user
         .sendResponse  (res, data) =>
-          user_exists = data.session.user
+          user_exists = data.oauthUser
           if (user_exists)
             return res.redirect('/account')
           else 
