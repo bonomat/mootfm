@@ -18,25 +18,25 @@ class exports.Security
           callback null, @user
 
       @everyauth
-      .google
-      .appId(@conf.google.clientId)
-      .appSecret(@conf.google.clientSecret)
-      .scope('https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/plus.me')
-      .findOrCreateUser (sess, accessToken, extra, googleUser, data) =>
-        googleUser.refreshToken = extra.refresh_token
-        googleUser.expiresIn = extra.expires_in
-        @user = {}
-        error = []
-        User.find_or_create_google_user googleUser, (err, user) ->
-          error.push err if err
-          @user = user if !err
-        return @user
-      .sendResponse  (res, data) =>
-        user_exists = data.session.user
-        if (user_exists)
-          return res.redirect('/account')
-        else 
-          return res.redirect('/') #TODO show not logged in sign MOOTFM-32
+        .google
+        .appId(@conf.google.clientId)
+        .appSecret(@conf.google.clientSecret)
+        .scope('https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/plus.me')
+        .findOrCreateUser (sess, accessToken, extra, googleUser, data) =>
+          googleUser.refreshToken = extra.refresh_token
+          googleUser.expiresIn = extra.expires_in
+          @user = {}
+          error = []
+          User.find_or_create_google_user googleUser, (err, user) =>
+            error.push err if err
+            @user = user if !err
+          return @user
+        .sendResponse  (res, data) =>
+          user_exists = data.session.user
+          if (user_exists)
+            return res.redirect('/account')
+          else 
+            return res.redirect('/') #TODO show not logged in sign MOOTFM-32
         
 
       @everyauth
@@ -45,15 +45,17 @@ class exports.Security
         .consumerSecret(@conf.twit.consumerSecret)
         .findOrCreateUser (sess, accessToken, accessSecret, twitUser) ->
           @user = {}
-          user_data=
-            username: twitUser.name
-            email: "TODO"
-            password: "TODO"
-          User.create user_data, (err,user)=>
-            return err if err      
-            @user = user
+          error = []
+          User.find_or_create_twitter_user twitUser, (err, user) =>
+            error.push err if err
+            @user = user if !err
           return @user
-        .redirectPath '/'
+        .sendResponse  (res, data) =>
+          user_exists = data.oauthUser
+          if (user_exists)
+            return res.redirect('/account')
+          else 
+            return res.redirect('/') #TODO show not logged in sign MOOTFM-32
 
       @everyauth
         .facebook
