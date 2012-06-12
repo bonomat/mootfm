@@ -189,3 +189,12 @@ describe "User:", ->
     errors.should.include('No Username defined')
     done()
 
+  it "tests validate user method with errors ( no password defined ) ", (done) ->
+    newUserAttributes=
+      name: 'Philipp Hoenisch'
+      email: 'bonomat@gmail.com'
+      login: 'bonomat'
+    errors = User.validateUser newUserAttributes
+    errors.should.include('No Password defined')
+    done()
+

@@ -134,6 +134,7 @@ User.validateUser = (newUserAttributes) ->
   errors = []
   errors.push 'No Email defined' unless newUserAttributes.email
   errors.push 'No Username defined' unless newUserAttributes.login
+  errors.push 'No Password defined' unless newUserAttributes.password
   return errors
   
 
