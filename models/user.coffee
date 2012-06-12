@@ -116,5 +116,19 @@ User.find_or_create_twitter_user = (twitter_user, callback) ->
     else
       callback null, user
 
+User.find_or_create_facebook_user = (facebook_user, callback) ->
+  User.get_by_facebook_id facebook_user.id, (err, user) ->
+    if err
+      user_data=
+        facebook_id: facebook_user.id
+        email: facebook_user.email
+        username: facebook_user.username
+        name: facebook_user.name
+      User.create user_data, (err2, user2)-> 
+        callback err, null if err2
+        callback null, user2
+    else
+      callback null, user
+
 
 

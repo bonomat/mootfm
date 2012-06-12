@@ -1,0 +1,11 @@
+h2 Account
+- if ('undefined' !== typeof errors && errors.length)
+  ul#errors
+    - each error in errors
+      li.error= error
+form(action='/save', method='POST')
+  #login 
+    label(for=everyauth.password.loginFormFieldName) TODO
+    input(type='text', name=everyauth.password.loginFormFieldName, value=userParams[everyauth.password.loginFormFieldName])    
+  #submit
+    input(type='submit') Register

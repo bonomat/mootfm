@@ -117,7 +117,7 @@ describe "User:", ->
           should.exist(err)
           done()
 
-  it "tests find an existing google user by using the wrapper method", (done)->
+  it "tests create google user by using the wrapper method", (done)->
     google_user=
       name: "Tobias Hönisch"
       email: "tobias@hoenisch.at"
@@ -132,7 +132,7 @@ describe "User:", ->
         done()
 
 
-  it "tests find an existing twitter user by using the wrapper method", (done)->
+  it "tests create twitter user by using the wrapper method", (done)->
     twitter_user=
       name: "Tobias Hönisch"
       screen_name: "twitterUsername"
@@ -145,4 +145,20 @@ describe "User:", ->
         db_users.username.should.eql "twitterUsername"
         db_users.twitter_id.should.eql "unknownTwitterID"
         done()
+
+  it "tests create facebook user by using the wrapper method", (done)->
+    facebook_user=
+      name: "Tobias Hönisch"
+      username: "facebookUser"
+      id: "unknownFacebookID"
+      email: "unknown@gmail.com"
+    User.find_or_create_facebook_user facebook_user, (err, create_user)->
+      return done(err) if err
+      create_user.exists.should.be.true
+      User.get_by_facebook_id facebook_user.id,(err, db_users) ->
+        return done(err) if err
+        db_users.username.should.eql "facebookUser"
+        db_users.facebook_id.should.eql "unknownFacebookID"
+        done()
+
 

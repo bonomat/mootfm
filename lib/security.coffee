@@ -26,9 +26,9 @@ class exports.Security
           googleUser.refreshToken = extra.refresh_token
           googleUser.expiresIn = extra.expires_in
           @user = {}
-          error = []
+          @error = []
           User.find_or_create_google_user googleUser, (err, user) =>
-            error.push err if err
+            @error.push err if err
             @user = user if !err
           return @user
         .sendResponse  (res, data) =>
@@ -45,9 +45,9 @@ class exports.Security
         .consumerSecret(@conf.twit.consumerSecret)
         .findOrCreateUser (sess, accessToken, accessSecret, twitUser) ->
           @user = {}
-          error = []
+          @error = []
           User.find_or_create_twitter_user twitUser, (err, user) =>
-            error.push err if err
+            @error.push err if err
             @user = user if !err
           return @user
         .sendResponse  (res, data) =>
@@ -61,19 +61,23 @@ class exports.Security
         .facebook
         .appId(@conf.fb.appId)
         .appSecret(@conf.fb.appSecret)
+        .scope('email')
+#        .fields('id,name,email,picture')
         .findOrCreateUser (session, accessToken, accessTokenExtra, fbUserMetadata) ->
           console.log "retrieved facebook info"
           console.log fbUserMetadata
           @user = {}
-          user_data=
-            username: fbUserMetadata.username
-            email: "TODO"
-            password: "TODO"
-          User.create user_data, (err,user)=>
-            return err if err      
-            @user = user
+          @error = []
+          User.find_or_create_facebook_user fbUserMetadata, (err, user) =>
+            @error.push err if err
+            @user = user if !err
           return @user
-        .redirectPath '/'
+        .sendResponse  (res, data) =>
+          user_exists = data.oauthUser
+          if (user_exists)
+            return res.redirect('/account')
+          else 
+            return res.redirect('/') #TODO show not logged in sign MOOTFM-32
 
       @everyauth
         .password
