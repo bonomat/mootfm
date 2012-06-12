@@ -13,7 +13,6 @@ class exports.Security
           @user = {}          
           User.get userId, (err,get_user)=>
             #TODO redirect to user not found
-            console.log err if err
             @user = get_user
           callback null, @user
 
@@ -64,8 +63,6 @@ class exports.Security
         .scope('email')
 #        .fields('id,name,email,picture')
         .findOrCreateUser (session, accessToken, accessTokenExtra, fbUserMetadata) ->
-          console.log "retrieved facebook info"
-          console.log fbUserMetadata
           @user = {}
           @error = []
           User.find_or_create_facebook_user fbUserMetadata, (err, user) =>
@@ -97,16 +94,18 @@ class exports.Security
             email: req.body.email
             name: req.body.name
           }
-        .authenticate((login, password) =>
+        .authenticate((login, password) ->
           @errors = []
           @errors.push 'Missing username'  unless login
           @errors.push 'Missing password'  unless password
-          @user
+          @user = {}
           User.get_by_username login, (err, user)=>
-            @errors.push 'Login failed, user not defined' unless user
-            @errors.push 'Login failed, wrong password' if user.password isnt password
+            @errors.push 'Login failed, user not found' if err
+            @errors.push 'Login failed, wrong password' if !err and user.password isnt password
             @user = user
-          return errors  if errors.length
+          console.log @errors
+          console.log @errors.length
+          return @errors if @errors.length > 0
           return @user
         )
         .getRegisterPath('/register')
@@ -129,8 +128,7 @@ class exports.Security
             username: newUserAttrs.login
             password: newUserAttrs.password
             name: newUserAttrs.name
-          User.create user_data, (err,user)=>
-            console.log err if err      
+          User.create user_data, (err,user)=> 
             @user = user
           return @user
         .loginSuccessRedirect('/')
