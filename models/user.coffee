@@ -130,5 +130,8 @@ User.find_or_create_facebook_user = (facebook_user, callback) ->
     else
       callback null, user
 
-
+User.validateUser = (newUserAttributes) ->
+  errors = []
+  return errors
+  
 

@@ -160,5 +160,14 @@ describe "User:", ->
         db_users.username.should.eql "facebookUser"
         db_users.facebook_id.should.eql "unknownFacebookID"
         done()
-
+  
+  it "tests validate user method", (done) ->
+    newUserAttributes=
+      email: 'philipp.hoenisch@gmail.com'
+      name: 'Philipp Hoenisch'
+      login: 'bonomat'
+      password: 'test'
+    errors = User.validateUser newUserAttributes
+    errors.should.be.empty
+    done()
 
