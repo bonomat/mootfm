@@ -132,6 +132,7 @@ User.find_or_create_facebook_user = (facebook_user, callback) ->
 
 User.validateUser = (newUserAttributes) ->
   errors = []
+  errors.push 'No Email defined' unless newUserAttributes.email
   return errors
   
 
