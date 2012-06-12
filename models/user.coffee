@@ -135,6 +135,9 @@ User.validateUser = (newUserAttributes) ->
   errors.push 'No Email defined' unless newUserAttributes.email
   errors.push 'No Username defined' unless newUserAttributes.login
   errors.push 'No Password defined' unless newUserAttributes.password
+  User.get_by_username newUserAttributes.login, (err, user) ->
+    errors.push 'Username already taken' if !err
+  User.get_by_email newUserAttributes.email, (err, user) ->
+    errors.push 'Email already taken' if !err
   return errors
-  
 

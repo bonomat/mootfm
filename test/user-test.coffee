@@ -197,4 +197,3 @@ describe "User:", ->
     errors = User.validateUser newUserAttributes
     errors.should.include('No Password defined')
     done()
-
