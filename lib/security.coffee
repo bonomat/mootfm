@@ -95,24 +95,12 @@ class exports.Security
         .extractExtraRegistrationParams (req) ->
           return {
             email: req.body.email
-            google_id: req.body.google_id
-            facebook_id: req.body.facebook_id
-            twitter_id: req.body.twitter_id
+            name: req.body.name
           }
-        .displayRegister (req, res, data) ->
-          userParams = {}
-          ############## extract google data ###########
-          if req.session.auth.google
-            user = req.session.auth.google.user
-            userParams.google_id = user.id
-            userParams.email = user.email
-          console.log "passing following data to registration form "
-          console.log userParams
-          res.render('register', { userParams: userParams })
         .authenticate((login, password) =>
           console.log "authenticating with " + login + " pw: " + password
           errors = []
-          errors.push 'Missing login'  unless login
+          errors.push 'Missing username'  unless login
           errors.push 'Missing password'  unless password
           errors.push 'Login failed, user not defined' unless @user
           errors.push 'Login failed, wrong password' if @user.password isnt password
@@ -128,10 +116,9 @@ class exports.Security
               title: 'mootFM'
           ), 200
         .validateRegistration (newUserAttrs, errors) =>
-          login = newUserAttrs.login
-          #TODO check if user is in DB
-    #      @db.get_user_by_id login, (err, get_user)->
-    #        errors.push 'Login already taken'  if !err
+          moreErrors = User.validateUser newUserAttrs
+          if (moreErrors.length) 
+            errors.push.apply(errors, moreErrors)
           return errors
         .registerUser (newUserAttrs) =>
           console.log "got following attributes"
