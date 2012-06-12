@@ -98,12 +98,14 @@ class exports.Security
             name: req.body.name
           }
         .authenticate((login, password) =>
-          console.log "authenticating with " + login + " pw: " + password
-          errors = []
-          errors.push 'Missing username'  unless login
-          errors.push 'Missing password'  unless password
-          errors.push 'Login failed, user not defined' unless @user
-          errors.push 'Login failed, wrong password' if @user.password isnt password
+          @errors = []
+          @errors.push 'Missing username'  unless login
+          @errors.push 'Missing password'  unless password
+          @user
+          User.get_by_username login, (err, user)=>
+            @errors.push 'Login failed, user not defined' unless user
+            @errors.push 'Login failed, wrong password' if user.password isnt password
+            @user = user
           return errors  if errors.length
           return @user
         )
@@ -120,21 +122,18 @@ class exports.Security
           if (moreErrors.length) 
             errors.push.apply(errors, moreErrors)
           return errors
-        .registerUser (newUserAttrs) =>
-          console.log "got following attributes"
-          console.log newUserAttrs
-          login = newUserAttrs.login
-          password = newUserAttrs.password
+        .registerUser (newUserAttrs) ->
           @user = {}
           user_data=
-            username: "TODO"
-            email: login
-            password: password
+            email: newUserAttrs.email
+            username: newUserAttrs.login
+            password: newUserAttrs.password
+            name: newUserAttrs.name
           User.create user_data, (err,user)=>
-            return err if err      
+            console.log err if err      
             @user = user
           return @user
         .loginSuccessRedirect('/')
-        .registerSuccessRedirect('/login')
+        .registerSuccessRedirect('/')
       cb null, @everyauth
   
