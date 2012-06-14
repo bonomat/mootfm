@@ -8,8 +8,6 @@ class exports.Server
     @user = new User 'test@gmail.com', 'test@gmail.com', 'test'
     @userTmpList = [ @user ]
     
-    @everyauth
-
     @conf = require './lib/conf'
     Security = require('./lib/security').Security
     @app = express.createServer()    
