@@ -1,137 +1,32 @@
 class exports.Security
   
-    init: (cb) ->
-      @everyauth = require 'everyauth'
+    init: (app, cb) ->
+
       User = require "../models/user"
       @conf = require './conf'
-      @everyauth.debug = true
 
-      @everyauth
-        .everymodule
-        .findUserById (userId, callback) =>
-          console.log "accessing find user by id: " + userId
-          @user = {}          
-          User.get userId, (err,get_user)=>
-            #TODO redirect to user not found
-            @user = get_user
-          callback null, @user
+      passport = require 'passport'
+      LocalStrategy = require('passport-local').Strategy
+      
+      passport.use new LocalStrategy (username, password, done) ->
+          User.get_by_username username , (err, user) ->
+            if (err)
+              return done(err)
+            if (!user) 
+              return done(null, false, { message: 'Unknown user' })
+            if (!user.password == password) 
+              return done(null, false, { message: 'Invalid password' })  
+            return done(null, user)
 
-      @everyauth
-        .google
-        .appId(@conf.google.clientId)
-        .appSecret(@conf.google.clientSecret)
-        .scope('https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/plus.me')
-        .findOrCreateUser (sess, accessToken, extra, googleUser, data) =>
-          googleUser.refreshToken = extra.refresh_token
-          googleUser.expiresIn = extra.expires_in
-          @user = {}
-          @error = []
-          User.find_or_create_google_user googleUser, (err, user) =>
-            @error.push err if err
-            @user = user if !err
-          return @user
-        .sendResponse  (res, data) =>
-          user_exists = data.oauthUser
-          if (user_exists)
-            return res.redirect('/account')
-          else 
-            return res.redirect('/') #TODO show not logged in sign MOOTFM-32
-        
+      passport.serializeUser (user, done) ->
+        done(null, user.username)
 
-      @everyauth
-        .twitter
-        .consumerKey(@conf.twit.consumerKey)
-        .consumerSecret(@conf.twit.consumerSecret)
-        .findOrCreateUser (sess, accessToken, accessSecret, twitUser) ->
-          @user = {}
-          @error = []
-          User.find_or_create_twitter_user twitUser, (err, user) =>
-            @error.push err if err
-            @user = user if !err
-          return @user
-        .sendResponse  (res, data) =>
-          user_exists = data.oauthUser
-          if (user_exists)
-            return res.redirect('/account')
-          else 
-            return res.redirect('/') #TODO show not logged in sign MOOTFM-32
+      passport.deserializeUser (username, done) ->
+        User.get_by_username username, (err, user) ->
+          done(err, user)
 
-      @everyauth
-        .facebook
-        .appId(@conf.fb.appId)
-        .appSecret(@conf.fb.appSecret)
-        .scope('email')
-#        .fields('id,name,email,picture')
-        .findOrCreateUser (session, accessToken, accessTokenExtra, fbUserMetadata) ->
-          @user = {}
-          @error = []
-          User.find_or_create_facebook_user fbUserMetadata, (err, user) =>
-            @error.push err if err
-            @user = user if !err
-          return @user
-        .sendResponse  (res, data) =>
-          user_exists = data.oauthUser
-          if (user_exists)
-            return res.redirect('/account')
-          else 
-            return res.redirect('/') #TODO show not logged in sign MOOTFM-32
+      app.post '/login',
+        passport.authenticate('local', { successRedirect: '/',  failureRedirect: '/login', failureFlash: true })
 
-      @everyauth
-        .password
-        .loginHumanName('username')
-        .loginKey('username')
-        .loginWith('login')
-        .getLoginPath('/login')
-        .postLoginPath('/login')
-        .loginView('login.jade')
-        .loginLocals (req, res, done) ->
-          setTimeout (->
-            done null,
-              title: 'Async login'
-          ), 200
-        .extractExtraRegistrationParams (req) ->
-          return {
-            email: req.body.email
-            name: req.body.name
-          }
-        .authenticate((login, password) ->
-          @errors = []
-          @errors.push 'Missing username'  unless login
-          @errors.push 'Missing password'  unless password
-          @user = {}
-          User.get_by_username login, (err, user)=>
-            @errors.push 'Login failed, user not found' if err
-            @errors.push 'Login failed, wrong password' if !err and user.password isnt password
-            @user = user
-          console.log @errors
-          console.log @errors.length
-          return @errors if @errors.length > 0
-          return @user
-        )
-        .getRegisterPath('/register')
-        .postRegisterPath('/register')
-        .registerView('register.jade')
-        .registerLocals (req, res, done) ->
-          setTimeout (->
-            done null,
-              title: 'mootFM'
-          ), 200
-        .validateRegistration (newUserAttrs, errors) =>
-          moreErrors = User.validateUser newUserAttrs
-          if (moreErrors.length) 
-            errors.push.apply(errors, moreErrors)
-          return errors
-        .registerUser (newUserAttrs) ->
-          @user = {}
-          user_data=
-            email: newUserAttrs.email
-            username: newUserAttrs.login
-            password: newUserAttrs.password
-            name: newUserAttrs.name
-          User.create user_data, (err,user)=> 
-            @user = user
-          return @user
-        .loginSuccessRedirect('/')
-        .registerSuccessRedirect('/')
-      cb null, @everyauth
+      cb null, passport
   

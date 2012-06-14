@@ -2,8 +2,8 @@
   ul#errors
     - each error in errors
       li.error= error
-- if (!everyauth.loggedIn)
-  h2 Not Authenticated + #{everyauth.loggedIn} + #{everyauth.user} + #{user}
+- if (true)
+  h2 Not Authenticated
   #register
     a(href='/register') Register
   #password-login
@@ -23,7 +23,7 @@
 
   h2 Users
   #user-id
-  label User Id #{everyauth.user} auth #{everyauth.loggedIn} #{user}
+  label User Id 
   
   h3
     a(href='/logout') Logout

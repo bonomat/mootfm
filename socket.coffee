@@ -31,11 +31,10 @@ class exports.Server
     #production
     #@app.use(express.errorHandler())    
     security = new Security
-    security.init (error, callback) =>
-      @app.use(callback.middleware())    
-      @app.use(@app.router)  
-      callback.helpExpress(@app)
-      callback = callback
+    security.init @app, (error, passport) =>
+      @app.use(passport.initialize())
+      @app.use(passport.session())
+      @app.use(@app.router)
 
 
   start: (callback) ->
@@ -47,6 +46,9 @@ class exports.Server
       console.log req.user
       console.log req.session
       res.render('home')
+
+    @app.get '/login', (req, res) ->
+      res.render('login')
 
     @io = require('socket.io').listen @app
     count = 0
