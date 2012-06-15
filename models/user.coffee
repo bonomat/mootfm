@@ -48,11 +48,6 @@ User.get = (id, callback) ->
     return callback(err)  if err
     callback null, new User(node)
 
-User.get_by_email = (email, callback) ->
-  db.getNodeById id, (err, node) ->
-    return callback(err)  if err
-    callback null, new User(node)
-
 User._get_by_property = (property, value, callback) ->
   query = "
     START n=node:#{INDEX_NAME}(#{INDEX_KEY}= \"#{INDEX_VAL}\")
