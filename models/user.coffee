@@ -48,16 +48,6 @@ User.get = (id, callback) ->
     return callback(err)  if err
     callback null, new User(node)
 
-User._get_by_property = (property, value, callback) ->
-  query = "
-    START n=node:#{INDEX_NAME}(#{INDEX_KEY}= \"#{INDEX_VAL}\")
-    WHERE n.#{property} = \"#{value}\"
-    RETURN n
-  "
-  db.query query, (err, results) ->
-    return callback(err) if err
-    node = results[0] and results[0]["n"]
-    callback null, new User(node)
 
 User.get_by_email = (email, callback) ->
   User._get_by_property "email", email, callback
@@ -135,4 +125,17 @@ User.validateUser = (newUserAttributes) ->
   User.get_by_email newUserAttributes.email, (err, user) ->
     errors.push 'Email already taken' if !err
   return errors
+
+
+User._get_by_property = (property, value, callback) ->
+  query = "
+    START n=node:#{INDEX_NAME}(#{INDEX_KEY}= \"#{INDEX_VAL}\")
+    WHERE n.#{property} = \"#{value}\"
+    RETURN n
+  "
+  db.query query, (err, results) ->
+    return callback(err) if err 
+    return callback('no user found', null) if results.length == 0
+    node = results[0] and results[0]["n"]
+    callback null, new User(node)
 
