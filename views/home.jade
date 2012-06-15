@@ -2,7 +2,7 @@
   ul#errors
     - each error in errors
       li.error= error
-- if (true)
+- if (!user)
   h2 Not Authenticated
   #register
     a(href='/register') Register
@@ -19,11 +19,7 @@
       span#fb_login_text.fb_button_text 
         Connect with Facebook
 - else
-  h2 Authenticated
-
-  h2 Users
-  #user-id
-  label User Id 
+  h2 Welcome #{user.username}
   
   h3
     a(href='/logout') Logout

@@ -6,6 +6,10 @@ class exports.Security
       @conf = require './conf'
 
       passport = require 'passport'
+
+      app.use(passport.initialize())
+      app.use(passport.session())
+
       LocalStrategy = require('passport-local').Strategy
       
       passport.use new LocalStrategy (username, password, done) ->

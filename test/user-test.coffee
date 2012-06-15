@@ -167,33 +167,33 @@ describe "User:", ->
       name: 'Philipp Hoenisch'
       username: 'bonomat'
       password: 'test'
-    errors = User.validateUser newUserAttributes
-    errors.should.be.empty
-    done()
+    User.validateUser newUserAttributes, (errors) ->
+      errors.should.be.empty
+      done()
 
   it "tests validate user method with errors ( no email defined ) ", (done) ->
     newUserAttributes=
       name: 'Philipp Hoenisch'
       username: 'bonomat'
       password: 'test'
-    errors = User.validateUser newUserAttributes
-    errors.should.include('No Email defined')
-    done()
+    User.validateUser newUserAttributes, (errors) ->
+      errors.should.include('No Email defined')
+      done()
 
   it "tests validate user method with errors ( no username defined ) ", (done) ->
     newUserAttributes=
       name: 'Philipp Hoenisch'
       email: 'bonomat@gmail.com'
       password: 'test'
-    errors = User.validateUser newUserAttributes
-    errors.should.include('No Username defined')
-    done()
+    User.validateUser newUserAttributes, (errors) ->
+      errors.should.include('No Username defined')
+      done()
 
   it "tests validate user method with errors ( no password defined ) ", (done) ->
     newUserAttributes=
       name: 'Philipp Hoenisch'
       email: 'bonomat@gmail.com'
       username: 'bonomat'
-    errors = User.validateUser newUserAttributes
-    errors.should.include('No Password defined')
-    done()
+    User.validateUser newUserAttributes, (errors) ->
+      errors.should.include('No Password defined')
+      done()

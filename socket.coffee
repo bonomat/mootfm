@@ -32,8 +32,6 @@ class exports.Server
     #@app.use(express.errorHandler())    
     security = new Security
     security.init @app, (error, passport) =>
-      @app.use(passport.initialize())
-      @app.use(passport.session())
       @app.use(@app.router)
 
 
@@ -44,7 +42,7 @@ class exports.Server
     console.log 'Server listening on port ' + @port
 
     @app.get '/', (req, res) ->
-      res.render('home')
+      res.render('home', {user: req.user, message: req.flash('error')})
 
     @app.get '/login', (req, res) ->
       res.render('login', {user: req.user, message: req.flash('error')})
@@ -52,17 +50,26 @@ class exports.Server
     @app.get '/register', (req, res) ->
       res.render('register', {userData: {}, message: req.flash('error')})
 
+    @app.get '/logout', (req, res) ->
+      req.logOut()
+      res.redirect('/')
+
+
     @app.post '/register', (req, res) ->
       newUserAttributes = 
         username : req.body.username
         password : req.body.password
         email : req.body.email
         name : req.body.name
-      errors = User.validateUser newUserAttributes
-      if (errors.length) 
-        res.render('register', {errors: errors, userData: newUserAttributes}) 
-      else       
-        res.redirect('/account')
+      User.validateUser newUserAttributes, (errors) ->
+        if (errors.length) 
+          res.render('register', {errors: errors, userData: newUserAttributes}) 
+        else       
+          User.create newUserAttributes, (err, user) ->
+            if (err)
+              res.render('register', {errors: errors, userData: newUserAttributes})
+            else
+              res.redirect('/login')
 
     @io = require('socket.io').listen @app
     count = 0
