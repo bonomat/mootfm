@@ -11,7 +11,8 @@ class exports.Security
       app.use(passport.session())
 
       LocalStrategy = require('passport-local').Strategy
-      
+      GoogleStrategy = require('passport-google-oauth').OAuth2Strategy
+
       passport.use new LocalStrategy (username, password, done) ->
         process.nextTick ->
           User.get_by_username username , (err, user) ->
@@ -23,6 +24,12 @@ class exports.Security
               return done(null, false, { message: 'Invalid password' })  
             return done(null, user)
 
+      passport.use new GoogleStrategy {clientID: @conf.google.clientId, clientSecret: @conf.google.clientSecret, callbackURL: "/auth/google/callback"}, (accessToken, refreshToken, profile, done) ->
+        process.nextTick () ->
+          User.find_or_create_google_user profile, (error, user) ->
+            return done(error, user)
+
+
       passport.serializeUser (user, done) ->
         done(null, user.username)
 
@@ -32,6 +39,15 @@ class exports.Security
 
       app.post '/login',
         passport.authenticate('local', { successRedirect: '/',  failureRedirect: '/login', failureFlash: true })
+
+      app.get "/auth/google", 
+        passport.authenticate("google", 
+          { scope: [ "https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email" ] }
+        ), (req, res) ->
+          # this function will never be called, it is just needed for passportjs
+
+      app.get "/auth/google/callback", passport.authenticate("google", failureRedirect: "/fail"), (req, res) ->
+          res.redirect "/"
 
       cb null, passport
   

@@ -79,11 +79,12 @@ User.find_or_create_google_user = (google_user, callback) ->
     if err
       user_data=
         google_id: google_user.id
-        email: google_user.email
-        name: google_user.name
+        email: google_user.emails[0]?.value
+        username: google_user.displayName
+        name: google_user.name?.familyName + " " + google_user.name?.givenName
       User.create user_data, (err2, user2)->        
-        callback err,null if err2
-        callback null, user2
+        return callback err,null if err2
+        return callback null, user2
     else
       callback null, user
 
@@ -96,8 +97,8 @@ User.find_or_create_twitter_user = (twitter_user, callback) ->
         username: twitter_user.screen_name
         name: twitter_user.name
       User.create user_data, (err2, user2)-> 
-        callback err, null if err2
-        callback null, user2
+        return callback err, null if err2
+        return callback null, user2
     else
       callback null, user
 
@@ -110,8 +111,8 @@ User.find_or_create_facebook_user = (facebook_user, callback) ->
         username: facebook_user.username
         name: facebook_user.name
       User.create user_data, (err2, user2)-> 
-        callback err, null if err2
-        callback null, user2
+        return callback err, null if err2
+        return callback null, user2
     else
       callback null, user
 

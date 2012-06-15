@@ -119,8 +119,11 @@ describe "User:", ->
 
   it "tests create google user by using the wrapper method", (done)->
     google_user=
-      name: "Tobias Hönisch"
-      email: "tobias@hoenisch.at"
+      name:
+        givenName: "Tobias"
+        familyName: "Hönisch"
+      emails:
+        [value: "tobias@hoenisch.at"]
       id: "unknownGoogleID"
     User.find_or_create_google_user google_user, (err, create_user)->
       return done(err) if err
