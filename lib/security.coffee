@@ -9,9 +9,10 @@ class exports.Security
       LocalStrategy = require('passport-local').Strategy
       
       passport.use new LocalStrategy (username, password, done) ->
+        process.nextTick ->
           User.get_by_username username , (err, user) ->
             if (err)
-              return done(err)
+              return done(null, false, { message: 'Incorrect username or password!' })
             if (!user) 
               return done(null, false, { message: 'Unknown user' })
             if (!user.password == password) 

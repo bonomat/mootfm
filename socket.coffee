@@ -48,7 +48,7 @@ class exports.Server
       res.render('home')
 
     @app.get '/login', (req, res) ->
-      res.render('login')
+      res.render('login', {user: req.user, message: req.flash('error')})
 
     @io = require('socket.io').listen @app
     count = 0
