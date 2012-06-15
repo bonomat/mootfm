@@ -38,17 +38,31 @@ class exports.Server
 
 
   start: (callback) ->
+    User = require './models/user'
     console.log 'Server starting'
     @app.listen @port
     console.log 'Server listening on port ' + @port
 
     @app.get '/', (req, res) ->
-      console.log req.user
-      console.log req.session
       res.render('home')
 
     @app.get '/login', (req, res) ->
       res.render('login', {user: req.user, message: req.flash('error')})
+
+    @app.get '/register', (req, res) ->
+      res.render('register', {userData: {}, message: req.flash('error')})
+
+    @app.post '/register', (req, res) ->
+      newUserAttributes = 
+        username : req.body.username
+        password : req.body.password
+        email : req.body.email
+        name : req.body.name
+      errors = User.validateUser newUserAttributes
+      if (errors.length) 
+        res.render('register', {errors: errors, userData: newUserAttributes}) 
+      else       
+        res.redirect('/account')
 
     @io = require('socket.io').listen @app
     count = 0

@@ -6,15 +6,15 @@ h2 Register
 form(action='/register', method='POST')
   #name
     label(for='name') Full name
-    input(type='text', name='name', value=userParams['name'])    
+    input(type='text', name='name', value=userData['name'])    
   #email
     label(for='email') Email
-    input(type='text', name='email', value=userParams['email'])
+    input(type='text', name='email', value=userData['email'])
   #username
-    label(for=everyauth.password.loginFormFieldName) Username
-    input(type='text', name=everyauth.password.loginFormFieldName, value=userParams[everyauth.password.loginFormFieldName])
+    label(for='username') Username
+    input(type='text', name='username', value=userData['username'])
   #password
-    label(for=everyauth.password.passwordFormFieldName) Password
-    input(type='password', name=everyauth.password.passwordFormFieldName)
+    label(for='password') Password
+    input(type='password', name='password', value=userData['password']  )
   #submit
     input(type='submit') Register

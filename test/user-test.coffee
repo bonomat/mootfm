@@ -165,7 +165,7 @@ describe "User:", ->
     newUserAttributes=
       email: 'philipp.hoenisch@gmail.com'
       name: 'Philipp Hoenisch'
-      login: 'bonomat'
+      username: 'bonomat'
       password: 'test'
     errors = User.validateUser newUserAttributes
     errors.should.be.empty
@@ -174,13 +174,13 @@ describe "User:", ->
   it "tests validate user method with errors ( no email defined ) ", (done) ->
     newUserAttributes=
       name: 'Philipp Hoenisch'
-      login: 'bonomat'
+      username: 'bonomat'
       password: 'test'
     errors = User.validateUser newUserAttributes
     errors.should.include('No Email defined')
     done()
 
-  it "tests validate user method with errors ( no login defined ) ", (done) ->
+  it "tests validate user method with errors ( no username defined ) ", (done) ->
     newUserAttributes=
       name: 'Philipp Hoenisch'
       email: 'bonomat@gmail.com'
@@ -193,7 +193,7 @@ describe "User:", ->
     newUserAttributes=
       name: 'Philipp Hoenisch'
       email: 'bonomat@gmail.com'
-      login: 'bonomat'
+      username: 'bonomat'
     errors = User.validateUser newUserAttributes
     errors.should.include('No Password defined')
     done()
