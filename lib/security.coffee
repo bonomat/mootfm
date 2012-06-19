@@ -12,6 +12,7 @@ class exports.Security
 
       LocalStrategy = require('passport-local').Strategy
       GoogleStrategy = require('passport-google-oauth').OAuth2Strategy
+      FacebookStrategy = require("passport-facebook").Strategy
 
       passport.use new LocalStrategy (username, password, done) ->
         process.nextTick ->
@@ -29,6 +30,15 @@ class exports.Security
           User.find_or_create_google_user profile, (error, user) ->
             return done(error, user)
 
+      passport.use new FacebookStrategy {clientID: @conf.facebook.appId, clientSecret: @conf.facebook.appSecret, callbackURL: @conf.facebook.callbackURL}, (accessToken, refreshToken, profile, done) ->
+        process.nextTick () ->
+          User.find_or_create_facebook_user profile, (error, user) ->
+            return done(error, user)
+
+      passport.use new TwitterStrategy {clientID: @conf.twitter.appId, clientSecret: @conf.twitter.appSecret, callbackURL: @conf.twitter.callbackURL}, (accessToken, refreshToken, profile, done) ->
+        process.nextTick () ->
+          User.find_or_create_facebook_user profile, (error, user) ->
+            return done(error, user)
 
       passport.serializeUser (user, done) ->
         done(null, user.username)
@@ -40,13 +50,19 @@ class exports.Security
       app.post '/login',
         passport.authenticate('local', { successRedirect: '/',  failureRedirect: '/login', failureFlash: true })
 
-      app.get "/auth/google", 
-        passport.authenticate("google", 
+      app.get "/auth/google", passport.authenticate("google", 
           { scope: @conf.google.scope }
-        ), (req, res) ->
-          # this function will never be called, it is just needed for passportjs
+        ), (req, res) ->  # this function will never be called, it is just needed for passportjs
+
+      app.get '/auth/facebook', passport.authenticate('facebook')
 
       app.get @conf.google.callbackURL, passport.authenticate("google", failureRedirect: "/fail"), (req, res) ->
+          res.redirect "/"
+
+      app.get @conf.facebook.callbackURL, passport.authenticate("facebook", failureRedirect: "/fail"), (req, res) ->
+          res.redirect "/"
+
+      app.get @conf.twitter.callbackURL, passport.authenticate("twitter", failureRedirect: "/fail"), (req, res) ->
           res.redirect "/"
 
       cb null, passport

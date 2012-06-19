@@ -107,9 +107,9 @@ User.find_or_create_facebook_user = (facebook_user, callback) ->
     if err
       user_data=
         facebook_id: facebook_user.id
-        email: facebook_user.email
-        username: facebook_user.username
-        name: facebook_user.name
+        email: facebook_user.emails[0]?.value
+        username: facebook_user.displayName
+        name: facebook_user.name?.familyName + " " + facebook_user.name?.givenName
       User.create user_data, (err2, user2)-> 
         return callback err, null if err2
         return callback null, user2
