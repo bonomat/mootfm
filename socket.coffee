@@ -74,7 +74,6 @@ class exports.Server
     @io = require('socket.io').listen @app
     count = 0
     @io.sockets.on 'connection', (socket) =>
-      console socket
       count++
       console.log 'user connected ' + count
       socket.emit 'count', { number: count }

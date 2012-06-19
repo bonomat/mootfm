@@ -137,8 +137,12 @@ describe "User:", ->
 
   it "tests create twitter user by using the wrapper method", (done)->
     twitter_user=
-      name: "Tobias Hönisch"
-      screen_name: "twitterUsername"
+      name:
+        givenName: "Tobias"
+        familyName: "Hönisch"
+      emails:
+        []
+      displayName: "twitterUsername"
       id: "unknownTwitterID"
     User.find_or_create_twitter_user twitter_user, (err, create_user)->
       return done(err) if err
@@ -151,10 +155,13 @@ describe "User:", ->
 
   it "tests create facebook user by using the wrapper method", (done)->
     facebook_user=
-      name: "Tobias Hönisch"
-      username: "facebookUser"
+      name:
+        givenName: "Tobias"
+        familyName: "Hönisch"
+      displayName: "facebookUser"
       id: "unknownFacebookID"
-      email: "unknown@gmail.com"
+      emails:
+        [value: "unknown@gmail.com"]
     User.find_or_create_facebook_user facebook_user, (err, create_user)->
       return done(err) if err
       create_user.exists.should.be.true

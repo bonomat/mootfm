@@ -7,7 +7,7 @@ module.exports =
   twitter:
     consumerKey: "h0s9jAorOaiBHZpRDGthhQ"
     consumerSecret: "wveI3HrHImqsTnYeqbfeXXIsiHWF52xq6Wah8YyujY"
-    callbackURL: "http://local.host:8081/auth/twitter/callback"
+    callbackURL: "/auth/twitter/callback"
   facebook:
     appId: "393105680742125"
     appSecret: "eb08156c448051d2f78153016cfc7e95"

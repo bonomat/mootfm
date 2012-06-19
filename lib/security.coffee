@@ -51,13 +51,11 @@ class exports.Security
       app.post '/login',
         passport.authenticate('local', { successRedirect: '/',  failureRedirect: '/login', failureFlash: true })
 
-      app.get "/auth/google", passport.authenticate("google", 
-          { scope: @conf.google.scope }
-        ), (req, res) ->  # this function will never be called, it is just needed for passportjs
+      app.get "/auth/google", passport.authenticate("google", { scope: @conf.google.scope }), (req, res) ->  # this function will never be called, it is just needed for passportjs
 
-      app.get '/auth/facebook', passport.authenticate('facebook')
+      app.get '/auth/facebook', passport.authenticate('facebook'), (req, res) ->  # this function will never be called, it is just needed for passportjs
 
-      app.get '/auth/twitter', passport.authenticate('twitter')
+      app.get "/auth/twitter", passport.authenticate("twitter"), (req, res) ->  # this function will never be called, it is just needed for passportjs
 
       app.get @conf.google.callbackURL, passport.authenticate("google", failureRedirect: "/fail"), (req, res) ->
         res.redirect "/"
