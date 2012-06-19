@@ -13,6 +13,7 @@ class exports.Security
       LocalStrategy = require('passport-local').Strategy
       GoogleStrategy = require('passport-google-oauth').OAuth2Strategy
       FacebookStrategy = require("passport-facebook").Strategy
+      TwitterStrategy = require('passport-twitter').Strategy
 
       passport.use new LocalStrategy (username, password, done) ->
         process.nextTick ->
@@ -35,9 +36,9 @@ class exports.Security
           User.find_or_create_facebook_user profile, (error, user) ->
             return done(error, user)
 
-      passport.use new TwitterStrategy {clientID: @conf.twitter.appId, clientSecret: @conf.twitter.appSecret, callbackURL: @conf.twitter.callbackURL}, (accessToken, refreshToken, profile, done) ->
+      passport.use new TwitterStrategy {consumerKey: @conf.twitter.consumerKey, consumerSecret: @conf.twitter.consumerSecret, callbackURL: @conf.twitter.callbackURL}, (token, tokenSecret, profile, done) ->
         process.nextTick () ->
-          User.find_or_create_facebook_user profile, (error, user) ->
+          User.find_or_create_twitter_user profile, (error, user) ->
             return done(error, user)
 
       passport.serializeUser (user, done) ->
@@ -56,14 +57,16 @@ class exports.Security
 
       app.get '/auth/facebook', passport.authenticate('facebook')
 
+      app.get '/auth/twitter', passport.authenticate('twitter')
+
       app.get @conf.google.callbackURL, passport.authenticate("google", failureRedirect: "/fail"), (req, res) ->
-          res.redirect "/"
+        res.redirect "/"
 
       app.get @conf.facebook.callbackURL, passport.authenticate("facebook", failureRedirect: "/fail"), (req, res) ->
-          res.redirect "/"
+        res.redirect "/"
 
       app.get @conf.twitter.callbackURL, passport.authenticate("twitter", failureRedirect: "/fail"), (req, res) ->
-          res.redirect "/"
+        res.redirect "/"
 
       cb null, passport
   

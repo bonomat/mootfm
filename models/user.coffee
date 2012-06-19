@@ -93,9 +93,9 @@ User.find_or_create_twitter_user = (twitter_user, callback) ->
     if err
       user_data=
         twitter_id: twitter_user.id
-        email: twitter_user.email
-        username: twitter_user.screen_name
-        name: twitter_user.name
+        email: twitter_user.emails[0]?.value
+        username: twitter_user.displayName
+        name: twitter_user.name?.familyName + " " + twitter_user.name?.givenName
       User.create user_data, (err2, user2)-> 
         return callback err, null if err2
         return callback null, user2
