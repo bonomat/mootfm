@@ -24,7 +24,7 @@ class exports.Security
               return done(null, false, { message: 'Invalid password' })  
             return done(null, user)
 
-      passport.use new GoogleStrategy {clientID: @conf.google.clientId, clientSecret: @conf.google.clientSecret, callbackURL: "/auth/google/callback"}, (accessToken, refreshToken, profile, done) ->
+      passport.use new GoogleStrategy {clientID: @conf.google.clientId, clientSecret: @conf.google.clientSecret, callbackURL: @conf.google.callbackURL}, (accessToken, refreshToken, profile, done) ->
         process.nextTick () ->
           User.find_or_create_google_user profile, (error, user) ->
             return done(error, user)
@@ -42,11 +42,11 @@ class exports.Security
 
       app.get "/auth/google", 
         passport.authenticate("google", 
-          { scope: [ "https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email" ] }
+          { scope: @conf.google.scope }
         ), (req, res) ->
           # this function will never be called, it is just needed for passportjs
 
-      app.get "/auth/google/callback", passport.authenticate("google", failureRedirect: "/fail"), (req, res) ->
+      app.get @conf.google.callbackURL, passport.authenticate("google", failureRedirect: "/fail"), (req, res) ->
           res.redirect "/"
 
       cb null, passport
