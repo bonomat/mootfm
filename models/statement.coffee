@@ -60,7 +60,6 @@ Statement::getArguments = (callback) ->
     MATCH (arguments) -[side]-> (statement)
     RETURN arguments, TYPE(side)
     "
-  user = this
   db.query query, (err, results) ->
     return callback(err)  if err
     sides = {}
