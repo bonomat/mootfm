@@ -7,11 +7,11 @@ class exports.Server
 
     @user = new User 'test@gmail.com', 'test@gmail.com', 'test'
     @userTmpList = [ @user ]
-    
+
     @conf = require './lib/conf'
     Security = require('./lib/security').Security
-    @app = express.createServer()    
-    
+    @app = express.createServer()
+
     @app.use express.bodyParser()
 
     @app.set('views', __dirname + '/views')
@@ -29,14 +29,15 @@ class exports.Server
     }))
 
     #production
-    #@app.use(express.errorHandler())    
+    #@app.use(express.errorHandler())
     security = new Security
     security.init @app, (error, passport) =>
       @app.use(@app.router)
 
-
   start: (callback) ->
     User = require './models/user'
+    Statement = require './models/statement'
+
     console.log 'Server starting'
     @app.listen @port
     console.log 'Server listening on port ' + @port
@@ -54,22 +55,40 @@ class exports.Server
       req.logOut()
       res.redirect('/')
 
-
     @app.post '/register', (req, res) ->
-      newUserAttributes = 
+      newUserAttributes =
         username : req.body.username
         password : req.body.password
         email : req.body.email
         name : req.body.name
       User.validateUser newUserAttributes, (errors) ->
-        if (errors.length) 
-          res.render('register', {errors: errors, userData: newUserAttributes}) 
-        else       
+        if (errors.length)
+          res.render('register', {errors: errors, userData: newUserAttributes})
+        else
           User.create newUserAttributes, (err, user) ->
             if (err)
               res.render('register', {errors: errors, userData: newUserAttributes})
             else
               res.redirect('/login')
+
+
+    @app.get '/statement/:id', (req, res) ->
+      db_statement=Statement.get req.params.id, (err,stmt) ->
+        return res.render 'error', {error:err} if err
+        statement=
+          title: stmt.title
+          no_of_sides: 2
+          id: stmt.id
+          sides:
+            pro: [
+              "Apple has child labour in China"
+              "Apple is against open source"
+              ]
+            contra: [
+              "Apple has best selling smart phone"
+              ]
+        console.log "Delivering Statement:\n", statement
+        res.render 'statement', {statement: statement}
 
     @io = require('socket.io').listen @app
     count = 0
