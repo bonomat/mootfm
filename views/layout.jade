@@ -1,9 +1,11 @@
 !!! 5
 html
   head
-    title= typeof(title) !== 'undefined' ? title : "mongoose-auth example"
+    title= typeof(title) !== 'undefined' ? title : "MootFM"
     script(src='http://static.ak.fbcdn.net/connect/en_US/core.js')
+
+    // twitter bootstrap on a cdn
+    link(rel='stylesheet', href='//current.bootstrapcdn.com/bootstrap-v204/css/bootstrap-combined.min.css')
   body
-    h1 everyauth Example
     #main
       != body
