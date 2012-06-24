@@ -95,7 +95,7 @@ Statement::get_representation = (level, callback) ->
   representation=
     title:@title
     id:@id
-  return callback null, representation if level == 0
+  return callback null, representation if level <= 0
   @getArguments (err, argument_dict) =>
     return callback(err) if err
     sides={}
