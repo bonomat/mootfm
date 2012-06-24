@@ -75,20 +75,9 @@ class exports.Server
     @app.get '/statement/:id', (req, res) ->
       db_statement=Statement.get req.params.id, (err,stmt) ->
         return res.render 'error', {error:err} if err
-        statement=
-          title: stmt.title
-          no_of_sides: 2
-          id: stmt.id
-          sides:
-            pro: [
-              "Apple has child labour in China"
-              "Apple is against open source"
-              ]
-            contra: [
-              "Apple has best selling smart phone"
-              ]
-        console.log "Delivering Statement:\n", statement
-        res.render 'statement', {statement: statement}
+        stmt.get_representation (err, representation) ->
+          console.log "Delivering Statement:\n", representation
+          res.render 'statement', {statement: representation}
 
     @io = require('socket.io').listen @app
     count = 0
