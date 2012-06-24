@@ -77,6 +77,7 @@ class exports.Server
         console.log "DB statement", stmt
         return res.render 'error', {error:err} if err
         stmt.get_representation 1, (err, representation) ->
+          return res.render 'error', {error:err} if err
           console.log "Delivering Statement:\n", JSON.stringify(representation, null, 2)
           res.render 'statement', {statement: representation}
 
