@@ -104,7 +104,7 @@ describe "Statement:", ->
             all_arguments.should.eql {}
             done()
 
-  it "convert to representation", (done)->
+  it "convert to representation lv 1", (done)->
     statement_data=
       title: "Apple is crap"
     pro_statement_data=
@@ -127,11 +127,15 @@ describe "Statement:", ->
           sides=representation["sides"]
           sides.should.have.property('pro').with.lengthOf(1);
           sides.should.have.property('contra').with.lengthOf(1);
-          sides["pro"][0].should.equal "Apple has child labour in China"
-          sides["contra"][0].should.equal "Apple has best selling smart phone"
+          sides["pro"][0].should.have.property('title', "Apple has child labour in China")
+          sides["pro"][0].should.have.property('id')
+          sides["pro"][0].should.not.have.property('sides')
+          sides["contra"][0].should.have.property('title', "Apple has best selling smart phone")
+          sides["contra"][0].should.have.property('id')
+          sides["contra"][0].should.not.have.property('sides')
           done()
 
-  it "convert to representation lv0", (done)->
+  it "convert to representation lv 0", (done)->
     statement_data=
       title: "Apple is crap"
     pro_statement_data=

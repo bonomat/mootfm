@@ -2,7 +2,9 @@
 # derivable or just pass-through properties (see below).
 Statement = module.exports = Statement = (@_node) ->
 
-neo4j = require("neo4j")
+neo4j = require "neo4j"
+async = require "async"
+
 db = new neo4j.GraphDatabase(process.env.NEO4J_URL or "http://localhost:7474")
 
 INDEX_NAME = "nodes"
@@ -94,11 +96,18 @@ Statement::get_representation = (level, callback) ->
     title:@title
     id:@id
   return callback null, representation if level == 0
-  @getArguments (err, argument_list) =>
+  @getArguments (err, argument_dict) =>
     return callback(err) if err
     sides={}
-    for side, arguments of argument_list
-      sides[side] = (argument.title for argument in arguments)
-    representation["sides"]=sides
-    callback null, representation
+    async.forEach ([side,stmt_arguments] for side, stmt_arguments of argument_dict), ([side,stmt_arguments],callback)->
+      async.map stmt_arguments, (argument,callback)->
+        argument.get_representation level-1, callback
+      , (err, side_arguments) ->
+        return callback(err) if err
+        sides[side]=side_arguments
+        callback null
+    , (err) ->
+      return callback(err) if err
+      representation["sides"]=sides
+      callback null, representation
 
