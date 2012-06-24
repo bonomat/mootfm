@@ -74,6 +74,7 @@ class exports.Server
 
     @app.get '/statement/:id', (req, res) ->
       Statement.get req.params.id, (err,stmt) ->
+        console.log "DB statement", stmt
         return res.render 'error', {error:err} if err
         stmt.get_representation 1, (err, representation) ->
           console.log "Delivering Statement:\n", JSON.stringify(representation, null, 2)
