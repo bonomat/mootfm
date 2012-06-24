@@ -87,3 +87,14 @@ Statement.create = (data, callback) ->
     node.index INDEX_NAME, INDEX_KEY, INDEX_VAL, (err) ->
       return callback(err)  if err
       callback null, statement
+
+# creates a json compatible representation of this statement
+Statement::get_representation = (callback) ->
+  @getArguments (err, sides) =>
+    return callback(err) if err
+    representation=
+      title:@title
+      id:@id
+      sides:sides
+    callback null, representation
+

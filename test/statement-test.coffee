@@ -84,7 +84,7 @@ describe "Statement:", ->
       pro_statement.argue statement, "pro", (err)->
         statement.getArguments (err, all_arguments)->
           return done(err) if err
-          all_arguments.should.have.ownProperty "pro"
+          all_arguments.should.have.property('pro').with.lengthOf(1);
           all_arguments["pro"][0].title.should.equal "Apple has child labour in China"
           done()
 
@@ -104,3 +104,29 @@ describe "Statement:", ->
             all_arguments.should.eql {}
             done()
 
+  it "convert to json", (done)->
+    statement_data=
+      title: "Apple is crap"
+    pro_statement_data=
+      title: "Apple has child labour in China"
+    contra_statement_data=
+      title: "Apple has best selling smart phone"
+    async.map [statement_data, pro_statement_data,contra_statement_data ], (item,callback)->
+      Statement.create item, callback
+    , (err, [statement, pro_statement, contra_statement ]) ->
+      return done(err) if err
+      async.map [[pro_statement,"pro"],[contra_statement,"contra"] ], ([argument, side],callback)->
+        argument.argue statement, side, callback
+      , (err) ->
+        return done(err) if err
+        statement.get_representation (err, representation)->
+          return done(err) if err
+          representation.should.have.property('title',"Apple is crap")
+          representation.should.have.property('id')
+          representation.should.have.property('sides')
+          sides=representation["sides"]
+          sides.should.have.property('pro').with.lengthOf(1);
+          sides.should.have.property('contra').with.lengthOf(1);
+          sides["pro"][0].title.should.equal "Apple has child labour in China"
+          sides["contra"][0].title.should.equal "Apple has best selling smart phone"
+          done()
