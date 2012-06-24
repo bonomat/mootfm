@@ -8,10 +8,9 @@
   .span12
     h2 #{statement.id} #{statement.title}
   .row-fluid
-  each titles, side in statement.sides
+  each args, side in statement.sides
     h2 #{statement.length}
     .span6
       h3 #{side}
-      each title, i in titles
-        p #{title}
-
+      each arg, i in args
+        a(href='/statement/#{arg.id}') #{arg.title}
