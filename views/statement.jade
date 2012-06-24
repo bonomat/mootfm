@@ -6,9 +6,11 @@
 .container-fluid
   .row-fluid
   .span12
-    h2 #{statement.id} #{statement.title}
+    h2 #{statement.title}
   .row-fluid
+  - var counter=0
   each points, side in statement.sides
+    - counter=counter+1
     h2 #{statement.length}
     .span6
       h3 #{side}
@@ -23,5 +25,16 @@
           input(type='text', name='point', value='')
         #submit
           input(type='submit',style="position: absolute; left: -9999px") Moot
+  - if (counter<2)
+    .span4
+      form(action='/statement/#{statement.id}/add', method='POST')
+        #side
+          label(for='side') Side
+          input(type='text', name='side', value='')
+        #point
+          label(for='point') Point
+          input(type='text', name='point', value='')
+        #submit
+          input(type='submit', value='New Side with Point')
 
 
