@@ -9,6 +9,9 @@ watch-test: has-coffee
 start: has-coffee
 	@coffee server.coffee
 
+test-data: has-coffee
+	@coffee create_test_data.coffee
+
 watch-server: has-coffee
 	@coffee -w server.coffee
 
