@@ -127,6 +127,6 @@ describe "Statement:", ->
           sides=representation["sides"]
           sides.should.have.property('pro').with.lengthOf(1);
           sides.should.have.property('contra').with.lengthOf(1);
-          sides["pro"][0].title.should.equal "Apple has child labour in China"
-          sides["contra"][0].title.should.equal "Apple has best selling smart phone"
+          sides["pro"][0].should.equal "Apple has child labour in China"
+          sides["contra"][0].should.equal "Apple has best selling smart phone"
           done()

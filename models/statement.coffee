@@ -90,8 +90,11 @@ Statement.create = (data, callback) ->
 
 # creates a json compatible representation of this statement
 Statement::get_representation = (callback) ->
-  @getArguments (err, sides) =>
+  @getArguments (err, argument_list) =>
     return callback(err) if err
+    sides={}
+    for side, arguments of argument_list
+      sides[side] = (argument.title for argument in arguments)
     representation=
       title:@title
       id:@id
