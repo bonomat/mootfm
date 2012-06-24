@@ -19,9 +19,6 @@ async.map [statement_data, pro_statement_data,contra_statement_data,pro_lv2_stat
     return console.log(err) if err
     pro_lv2_statement.argue contra_statement, "pro", (err, callback) ->
 
-      async.map [statement, contra_statement], (stmt, callback)->
-        stmt.get_representation callback
-      , (err, [statement_repr, contra_repr ]) ->
+      statement.get_representation 2, (err, repr)->
         return console.log(err) if err
-        console.log "Created Statement", JSON.stringify(statement_repr)
-        console.log "Created Statement", JSON.stringify(contra_repr)
+        console.log "Created Statement", JSON.stringify(repr, null, 2)
