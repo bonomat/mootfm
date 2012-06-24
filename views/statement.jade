@@ -10,11 +10,8 @@
   .row-fluid
   each titles, side in statement.sides
     h2 #{statement.length}
-    if statement.no_of_sides == 2
-      .span6
-        h3 #{side}
-        each title, i in titles
-          p #{title}
-    else
-      h3 Only 2 sides supported by now
+    .span6
+      h3 #{side}
+      each title, i in titles
+        p #{title}
 
