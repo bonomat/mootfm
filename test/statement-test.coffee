@@ -119,7 +119,7 @@ describe "Statement:", ->
         argument.argue statement, side, callback
       , (err) ->
         return done(err) if err
-        statement.get_representation (err, representation)->
+        statement.get_representation 1, (err, representation)->
           return done(err) if err
           representation.should.have.property('title',"Apple is crap")
           representation.should.have.property('id')
@@ -129,4 +129,26 @@ describe "Statement:", ->
           sides.should.have.property('contra').with.lengthOf(1);
           sides["pro"][0].should.equal "Apple has child labour in China"
           sides["contra"][0].should.equal "Apple has best selling smart phone"
+          done()
+
+  it "convert to representation lv0", (done)->
+    statement_data=
+      title: "Apple is crap"
+    pro_statement_data=
+      title: "Apple has child labour in China"
+    contra_statement_data=
+      title: "Apple has best selling smart phone"
+    async.map [statement_data, pro_statement_data,contra_statement_data ], (item,callback)->
+      Statement.create item, callback
+    , (err, [statement, pro_statement, contra_statement ]) ->
+      return done(err) if err
+      async.map [[pro_statement,"pro"],[contra_statement,"contra"] ], ([argument, side],callback)->
+        argument.argue statement, side, callback
+      , (err) ->
+        return done(err) if err
+        statement.get_representation 0, (err, representation)->
+          return done(err) if err
+          representation.should.have.property('title',"Apple is crap")
+          representation.should.have.property('id')
+          representation.should.not.have.property('sides')
           done()
