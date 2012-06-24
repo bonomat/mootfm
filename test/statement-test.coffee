@@ -104,7 +104,7 @@ describe "Statement:", ->
             all_arguments.should.eql {}
             done()
 
-  it "convert to json", (done)->
+  it "convert to representation", (done)->
     statement_data=
       title: "Apple is crap"
     pro_statement_data=
