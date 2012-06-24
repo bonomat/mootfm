@@ -75,8 +75,8 @@ class exports.Server
     @app.get '/statement/:id', (req, res) ->
       db_statement=Statement.get req.params.id, (err,stmt) ->
         return res.render 'error', {error:err} if err
-        stmt.get_representation (err, representation) ->
-          console.log "Delivering Statement:\n", representation
+        stmt.get_representation 1, (err, representation) ->
+          console.log "Delivering Statement:\n", JSON.stringify(representation, null, 2)
           res.render 'statement', {statement: representation}
 
     @io = require('socket.io').listen @app
