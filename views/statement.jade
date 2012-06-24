@@ -8,9 +8,20 @@
   .span12
     h2 #{statement.id} #{statement.title}
   .row-fluid
-  each args, side in statement.sides
+  each points, side in statement.sides
     h2 #{statement.length}
     .span6
       h3 #{side}
-      each arg, i in args
-        a(href='/statement/#{arg.id}') #{arg.title}
+      ul#points
+      each point, i in points
+        li.point
+          a(href='/statement/#{point.id}') #{point.title}
+      form(action='/statement/#{statement.id}/add', method='POST')
+        #side
+          input(type='hidden', name='side', value='#{side}')
+        #point
+          input(type='text', name='point', value='')
+        #submit
+          input(type='submit',style="position: absolute; left: -9999px") Moot
+
+

@@ -73,11 +73,21 @@ class exports.Server
 
 
     @app.get '/statement/:id', (req, res) ->
-      db_statement=Statement.get req.params.id, (err,stmt) ->
+      Statement.get req.params.id, (err,stmt) ->
         return res.render 'error', {error:err} if err
         stmt.get_representation 1, (err, representation) ->
           console.log "Delivering Statement:\n", JSON.stringify(representation, null, 2)
           res.render 'statement', {statement: representation}
+
+    @app.post '/statement/:id/add', (req, res) ->
+      id=req.params.id
+      side=req.body.side
+      title=req.body.point
+      Statement.get id, (err,stmt) ->
+        return res.render 'error', {error:err} if err
+        Statement.create {title: title}, (err,point)->
+          point.argue stmt, side, (err)->
+            return res.redirect('back');
 
     @io = require('socket.io').listen @app
     count = 0
