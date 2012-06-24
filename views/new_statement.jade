@@ -1,0 +1,19 @@
+- if ('undefined' !== typeof errors && errors.length)
+  ul#errors
+    - each error in errors
+      li.error= error
+
+.container-fluid
+  .row-fluid
+  .span12
+    h2 New Statement
+  .row-fluid
+  .span4
+    form(action='/statement/new', method='POST')
+      #point
+        label(for='title') Title
+        input(type='text', name='title', value='')
+      #submit
+        input(type='submit', value='New Statement')
+
+

@@ -91,6 +91,14 @@ class exports.Server
           point.argue stmt, side, (err)->
             return res.redirect('back');
 
+    @app.get '/statement', (req, res) ->
+      res.render 'new_statement'
+
+    @app.post '/statement/new', (req, res) ->
+      Statement.create {title: req.body.title}, (err,stmt) ->
+        return res.render 'error', {error:err} if err
+        return res.redirect("/statement/#{stmt.id}");
+
     @io = require('socket.io').listen @app
     count = 0
     @io.sockets.on 'connection', (socket) =>
