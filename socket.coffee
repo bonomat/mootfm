@@ -71,6 +71,8 @@ class exports.Server
             else
               res.redirect('/login')
 
+    @app.get '/test', (req, res) ->
+      res.render 'test', {}
 
     @app.get '/statement/:id', (req, res) ->
       Statement.get req.params.id, (err,stmt) ->
