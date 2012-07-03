@@ -1,6 +1,7 @@
 class exports.Server
 
   constructor: (@port) ->
+
     User = require './models/user'
 
     express = require 'express'
@@ -12,7 +13,11 @@ class exports.Server
     Security = require('./lib/security').Security
     @app = express.createServer()
 
+    # convert existing coffeescript, styl, and less resources to js and css for the browser
+    @app.use require('connect-assets')()
+
     @app.use express.bodyParser()
+
 
     @app.set('views', __dirname + '/views')
     @app.set('view engine', 'jade')
