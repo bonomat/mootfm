@@ -64,7 +64,7 @@ User.get_by_google_id = (google_id, callback) ->
 User.get_by_facebook_id = (facebook_id, callback) ->
   User._get_by_property "facebook_id", facebook_id, callback
 
-# creates the statement and persists (saves) it to the db, incl. indexing it:
+# creates the user and persists (saves) it to the db, incl. indexing it:
 User.create = (data, callback) ->
   node = db.createNode(data)
   user = new User(node)
@@ -82,7 +82,7 @@ User.find_or_create_google_user = (google_user, callback) ->
         email: google_user.emails[0]?.value
         username: google_user.displayName
         name: google_user.name?.familyName + " " + google_user.name?.givenName
-      User.create user_data, (err2, user2)->        
+      User.create user_data, (err2, user2)->
         return callback err,null if err2
         return callback null, user2
     else
@@ -96,7 +96,7 @@ User.find_or_create_twitter_user = (twitter_user, callback) ->
         email: twitter_user.emails[0]?.value
         username: twitter_user.displayName
         name: twitter_user.name?.familyName + " " + twitter_user.name?.givenName
-      User.create user_data, (err2, user2)-> 
+      User.create user_data, (err2, user2)->
         return callback err, null if err2
         return callback null, user2
     else
@@ -110,7 +110,7 @@ User.find_or_create_facebook_user = (facebook_user, callback) ->
         email: facebook_user.emails[0]?.value
         username: facebook_user.displayName
         name: facebook_user.name?.familyName + " " + facebook_user.name?.givenName
-      User.create user_data, (err2, user2)-> 
+      User.create user_data, (err2, user2)->
         return callback err, null if err2
         return callback null, user2
     else
@@ -124,7 +124,7 @@ User.validateUser = (newUserAttributes, callback) ->
   User.get_by_username newUserAttributes.username, (err, user) ->
     errors.push 'Username already taken' unless !user
     User.get_by_email newUserAttributes.email, (err, user) ->
-      errors.push 'Email already taken' unless !user    
+      errors.push 'Email already taken' unless !user
       callback errors
 
 
@@ -135,7 +135,7 @@ User._get_by_property = (property, value, callback) ->
     RETURN n
   "
   db.query query, (err, results) ->
-    return callback(err) if err 
+    return callback(err) if err
     return callback('no user found', null) if results.length == 0
     node = results[0] and results[0]["n"]
     callback null, new User(node)

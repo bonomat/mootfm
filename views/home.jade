@@ -16,10 +16,14 @@
       img(style='border: 0px', src='https://si0.twimg.com/images/dev/buttons/sign-in-with-twitter-l.png')
   #fb-login.fb_button(style='background-position: left -188px')
     a.fb_button_medium(href='/auth/facebook')
-      span#fb_login_text.fb_button_text 
+      span#fb_login_text.fb_button_text
         Connect with Facebook
 - else
   h2 Welcome #{user.username}
-  
+
   h3
     a(href='/logout') Logout
+
+h2 See first Statement
+  h3
+    a(href='/statement') Open statement
