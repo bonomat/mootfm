@@ -123,6 +123,7 @@ class exports.Server
         return res.send {id:stmt.id}, 201
 
 
+# Socket IO
     @io = require('socket.io').listen @app
     count = 0
     @io.sockets.on 'connection', (socket) =>
