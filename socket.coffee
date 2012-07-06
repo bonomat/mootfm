@@ -96,7 +96,7 @@ class exports.Server
         return res.render 'error', {error:err} if err
         Statement.create {title: title}, (err,point)->
           point.argue stmt, side, (err)->
-            return res.redirect('back');
+            return res.redirect 'back'
 
     @app.get '/statement', (req, res) ->
       res.render 'new_statement'
@@ -104,7 +104,24 @@ class exports.Server
     @app.post '/statement/new', (req, res) ->
       Statement.create {title: req.body.title}, (err,stmt) ->
         return res.render 'error', {error:err} if err
-        return res.redirect("/statement/#{stmt.id}");
+        return res.redirect "/statement/#{stmt.id}"
+
+# REST API
+    version = "v0"
+    url_prefix='/' + version
+    @app.get url_prefix + "/statement/:id", (req, res) ->
+      Statement.get req.params.id, (err,stmt) ->
+        return res.send {error:err} if err
+        stmt.get_representation 1, (err, representation) ->
+          return res.send {error:err} if err
+          console.log "Delivering Statement:\n", JSON.stringify(representation, null, 2)
+          return res.send representation
+
+    @app.post url_prefix + '/statement', (req, res) ->
+      Statement.create {title: req.body.title}, (err,stmt) ->
+        return res.send {error:err} if err
+        return res.send {id:stmt.id}, 201
+
 
     @io = require('socket.io').listen @app
     count = 0
