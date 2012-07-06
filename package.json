@@ -1,8 +1,8 @@
 {
   "author": "Phil",
-  "name": "Counter",
-  "description": "just an example using socket.io express and coffeesricpt",
-  "keywords": ["socket.io", "realtime", "counter", "express", "coffeescript"],
+  "name": "mootfm",
+  "description": "Moot.FM",
+  "keywords": ["realtime", "colloborative", "social", "discussions"],
   "version": "0.0.1",
   "main": "server.js",
   "engines": {
