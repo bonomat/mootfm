@@ -122,6 +122,16 @@ class exports.Server
         return res.send {error:err} if err
         return res.send {id:stmt.id}, 201
 
+    @app.post url_prefix+'/statement/:id/side/:side', (req, res) ->
+      id=req.params.id
+      side=req.params.side
+      title=req.body.point
+      Statement.get id, (err,stmt) ->
+        return res.send {error:err} if err
+        Statement.create {title: title}, (err,point)->
+          point.argue stmt, side, (err)->
+            return res.send {id:point.id}, 201
+
 
 # Socket IO
     @io = require('socket.io').listen @app

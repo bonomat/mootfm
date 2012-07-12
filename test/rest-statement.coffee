@@ -45,3 +45,32 @@ describe "Get Statement", ->
       obj.should.have.property "id", testState.id
       obj.should.have.property "title", testState.title
       done()
+
+describe "Points", ->
+  beforeEach (done) ->
+    server = require('../server').start done
+
+  it "should be successful.", (done) ->
+    http
+      method: "Post"
+      url: url + "/v0/statement"
+      json: true
+      body: JSON.stringify(
+        title: testState.title
+      )
+    , (err, res, body) ->
+      return done err if err
+      res.statusCode.should.be.equal 201
+      testState.id = body.id
+      http
+        method: "Post"
+        url: url + "/v0/statement/"+body.id+"/side/"+"pro"
+        json: true
+        body: JSON.stringify(
+          title: testState.title
+        )
+      , (err, res, body) ->
+        return done err if err
+        res.statusCode.should.be.equal 201
+        testState.id = body.id
+        done()
