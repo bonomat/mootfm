@@ -1,0 +1,31 @@
+
+.container-fluid
+
+#statement_container
+
+
+#templates(style='display:none')
+
+  #statement_template(type="text/template")
+    .container-fluid
+      .row-fluid
+      .span12
+        h2 {{title}}
+      .row-fluid
+      .span6
+        #left-side
+        ul#points
+      .span6
+        #right-side
+        ul#points
+
+
+  #point_template(type="text/template")
+    li
+      a(href='/statement/{{id}}') {{title}}
+
+  #point_input_template(type="text/template")
+    input#point_input(type="text")
+    input#point_button(type="button", value="Commit")
+
+!= js('statement')
