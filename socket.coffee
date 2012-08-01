@@ -110,19 +110,24 @@ class exports.Server
     version = "v0"
     url_prefix='/' + version
     @app.get url_prefix + "/statement/:id", (req, res) ->
+      console.log "get statement"
       Statement.get req.params.id, (err,stmt) ->
-        return res.send {error:err} if err
+        console.log "Error occured while loading statement:", err if err
+        return res.send 404 if err
         stmt.get_representation 1, (err, representation) ->
-          return res.send {error:err} if err
+          console.log "Error occured while converting statement:", err if err
+          return res.send 500 if err
           console.log "Delivering Statement:\n", JSON.stringify(representation, null, 2)
           return res.send representation
 
     @app.post url_prefix + '/statement', (req, res) ->
+      console.log "post statement"
       Statement.create {title: req.body.title}, (err,stmt) ->
         return res.send {error:err} if err
         return res.send {id:stmt.id}, 201
 
     @app.post url_prefix+'/statement/:id/side/:side', (req, res) ->
+      console.log "post statement side"
       id=req.params.id
       side=req.params.side
       title=req.body.point
