@@ -17,8 +17,9 @@ StatementView = Backbone.View.extend(
     return @
 
   render: ->
+    # fix this extra error handler, why is this called with a model without stuff on it?
     return unless @model.get("title") and @model.get("sides")
-    console.log "render called:", @model.toJSON(), @model.models
+    console.log "render called:", @model.toJSON()
     template = _.template( $("#statement_template").html(), {title: @model.get("title")});
     @el.html template
     for point in @model.get("sides")["pro"]
