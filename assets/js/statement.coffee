@@ -17,7 +17,8 @@ StatementView = Backbone.View.extend(
     return @
 
   render: ->
-    console.log "render called"
+    return unless @model.get("title") and @model.get("sides")
+    console.log "render called:", @model.toJSON(), @model.models
     template = _.template( $("#statement_template").html(), {title: @model.get("title")});
     @el.html template
     for point in @model.get("sides")["pro"]
