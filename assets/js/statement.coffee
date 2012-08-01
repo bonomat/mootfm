@@ -24,8 +24,10 @@ StatementView = Backbone.View.extend(
     @el.html template
     for point in @model.get("sides")["pro"]
       @el.find("#left-side").append _.template( $("#point_template").html(), point);
+      console.log "pro point", point
     for point in @model.get("sides")["contra"]
       @el.find("#right-side").append _.template( $("#point_template").html(), point);
+      console.log "contra point", point
 
   close: ->
       $(@el).unbind()
@@ -35,18 +37,19 @@ StatementView = Backbone.View.extend(
 AppRouter = Backbone.Router.extend(
   routes:
     "":"empty"
-    "/statement/:id": "statement"
+    ":id": "statement"
   empty: () ->
-    console.log "empty called"
+    console.log "empty route called"
     @statement = new Statement(id: 456);
     @statement.fetch()
     console.log "statement", @statement.toJSON()
     @statementView = new StatementView(model: @statement)
 
   statement: (id) ->
-    console.log "statement called"
+    console.log "statement route called", id
     @statement = new Statement(id: id);
     console.log "statement", @statement
+    @statement.fetch()
     @statementView = new StatementView(model: @statement)
 )
 
