@@ -6,10 +6,9 @@ Statement = Backbone.Model.extend(
 
 StatementView = Backbone.View.extend(
 
-  initialize: (statement)->
+  initialize: ()->
     @el=$("#statement_container")
-    console.log statement
-    @model=statement
+    console.log "init",@model.toJSON()
     @model.bind "change", @render, @
     @model.bind "destroy", @close, @
     @model.bind "reset", @render, @
@@ -37,8 +36,9 @@ AppRouter = Backbone.Router.extend(
     "/statement/:id": "statement"
   empty: () ->
     console.log "empty called"
-    @statement = new Statement(id: 418);
-    console.log "statement", @statement
+    @statement = new Statement(id: 456);
+    @statement.fetch()
+    console.log "statement", @statement.toJSON()
     @statementView = new StatementView(model: @statement)
 
   statement: (id) ->
