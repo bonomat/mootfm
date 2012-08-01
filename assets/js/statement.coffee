@@ -1,18 +1,7 @@
 _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
 
 Statement = Backbone.Model.extend(
-  urlRoot:"/vo/statement",
-  defaults:
-    title: "Cool Title"
-    id:0
-    sides: {}
-
-  initialize: ->
-    @bind "change:title", ->
-      title = @get("title")
-
-  change_title: (title) ->
-    @set title: title
+  urlRoot:"../v0/statement",
 )
 
 StatementView = Backbone.View.extend(
@@ -23,11 +12,13 @@ StatementView = Backbone.View.extend(
     @model=statement
     @model.bind "change", @render, @
     @model.bind "destroy", @close, @
+    @model.bind "reset", @render, @
 
     @render()
     return @
 
   render: ->
+    console.log "render called"
     template = _.template( $("#statement_template").html(), {title: @model.get("title")});
     @el.html template
     for point in @model.get("sides")["pro"]
@@ -39,24 +30,24 @@ StatementView = Backbone.View.extend(
       $(@el).unbind()
       $(@el).remove()
 )
-statement_view = new StatementView new Statement
-  title:"cool"
-  id:5
-  sides:
-    pro:
-      [
-        title: "pro1"
-        id: 7
-      ,
-        title: "pro2"
-        id: 8
-      ]
-    contra:
-      [
-        title: "contra1"
-        id: 9
-      ,
-        title: "contra2"
-        id: 10
-      ]
+
+AppRouter = Backbone.Router.extend(
+  routes:
+    "":"empty"
+    "/statement/:id": "statement"
+  empty: () ->
+    console.log "empty called"
+    @statement = new Statement(id: 418);
+    console.log "statement", @statement
+    @statementView = new StatementView(model: @statement)
+
+  statement: (id) ->
+    console.log "statement called"
+    @statement = new Statement(id: id);
+    console.log "statement", @statement
+    @statementView = new StatementView(model: @statement)
+)
+
+app = new AppRouter()
+Backbone.history.start()
 
