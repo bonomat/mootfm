@@ -6,7 +6,8 @@
   "version": "0.0.1",
   "main": "server.js",
   "engines": {
-    "node": "v0.8.x"
+    "node": "v0.8.x",
+    "npm":  "1.1.x"
   },
   "dependencies": {
     "async": "0.1.x",
