@@ -84,7 +84,7 @@ AppRouter = Backbone.Router.extend(
     "":"empty"
     ":id": "statement"
   empty: () ->
-    @statement = new Statement(id: 456);
+    @statement = new Statement(id: 1);
     @statement.fetch()
     statementView = new StatementView(model: @statement)
     @appView.showView statementView
