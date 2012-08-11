@@ -33,7 +33,6 @@
     "superagent": "0.4.x"
   },
   "scripts":{
-    "preinstall": "npm install https://github.com/LearnBoost/socket.io-client/tarball/master",
     "test":"mocha --compilers coffee:coffee-script --ignore-leaks -R spec"
   }
 }
