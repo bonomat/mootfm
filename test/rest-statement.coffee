@@ -60,17 +60,17 @@ describe "Points", ->
       )
     , (err, res, body) ->
       return done err if err
-      res.statusCode.should.be.equal 201
+      res.statusCode.should.be.equal 201, "first create"
       testState.id = body.id
       http
         method: "Post"
         url: url + "/v0/statement/"+body.id+"/side/"+"pro"
         json: true
         body: JSON.stringify(
-          title: testState.title
+          point: testState.title
         )
       , (err, res, body) ->
         return done err if err
-        res.statusCode.should.be.equal 201
+        res.statusCode.should.be.equal 201, "second create"
         testState.id = body.id
         done()
