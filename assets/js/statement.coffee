@@ -11,14 +11,15 @@ Statement = Backbone.Model.extend(
 
 StatementView = Backbone.View.extend(
   events:
-    "click #pro_input_button": "proClick",
-    "click #contra_input_button": "contraClick",
+    "keydown #new_pro_point_template": "pro_keydown"
+    "keydown #new_contra_point_template": "contra_keydown"
 
-  initialize: ()->
+  initialize: ->
     $(@el).html _.template( $("#statement_template").html(), {})
     @model.bind "change", @render, @
     @model.bind "destroy", @close, @
     @model.bind "reset", @render, @
+
     return @
 
   onClose: ->
@@ -40,15 +41,26 @@ StatementView = Backbone.View.extend(
 
   proClick :->
     point= $("#left-side textarea").val()
+    return unless point
     $("#left-side textarea").val("")
     $.post "v0/statement/#{@model.get('id')}/side/pro", {point}, (data) =>
       pro_points=@model.get("sides")["pro"]
       pro_points.push({title:point, id:data["id"]})
       @model.trigger('change')
 
+  pro_keydown: (e)->
+    if e.keyCode is 13 and not e.shiftKey
+      e.preventDefault() # Makes no difference
+      @proClick()
+
+  contra_keydown: (e)->
+    if e.keyCode is 13 and not e.shiftKey
+      e.preventDefault() # Makes no difference
+      @contraClick()
 
   contraClick : ->
     point= $("#right-side textarea").val()
+    return unless point
     $("#right-side textarea").val("")
     $.post "v0/statement/#{@model.get('id')}/side/contra", {point}, (data) =>
       contra_points=@model.get("sides")["contra"]

@@ -17,16 +17,14 @@
         #title
       .row-fluid
       .span6
+        h3 Pro
         #left-side
           #points
-          textarea#new_point_template.input-xlarge(type="text", rows=3)
+          textarea#new_pro_point_template.input-xlarge(type="text", rows=3)
       .span6
+        h3 Contra
         #right-side
           #points
-          textarea#new_point_template.input-xlarge(type="text", rows=3)
-      .row-fluid
-      .span6
-        .btn#pro_input_button Pro
-      .span6
-        .btn#contra_input_button Contra
+          textarea#new_contra_point_template.input-xlarge(type="text", rows=3)
+
 != js('statement')
