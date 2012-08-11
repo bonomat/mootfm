@@ -3,29 +3,30 @@
 
 #statement_container
 
-
 #templates(style='display:none')
-
-  #statement_template(type="text/template")
-    .container-fluid
-      .row-fluid
-      .span12
-        h2 {{title}}
-      .row-fluid
-      .span6
-        #left-side
-        ul#points
-      .span6
-        #right-side
-        ul#points
-
 
   #point_template(type="text/template")
     li
       a(href='#/{{id}}') {{title}}
-
-  #point_input_template(type="text/template")
-    input#point_input(type="text")
-    input#point_button(type="button", value="Commit")
-
+  #title_template(type="text/template")
+    h2 {{title}}
+  #statement_template(type="text/template")
+    .container-fluid
+      .row-fluid
+      .span12
+        #title
+      .row-fluid
+      .span6
+        #left-side
+          #points
+          textarea#new_point_template.input-xlarge(type="text", rows=3)
+      .span6
+        #right-side
+          #points
+          textarea#new_point_template.input-xlarge(type="text", rows=3)
+      .row-fluid
+      .span6
+        .btn#pro_input_button Pro
+      .span6
+        .btn#contra_input_button Contra
 != js('statement')

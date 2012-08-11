@@ -117,6 +117,10 @@ class exports.Server
         stmt.get_representation 1, (err, representation) ->
           console.log "Error occured while converting statement:", err if err
           return res.send 500 if err
+          if not representation["sides"]["pro"]
+            representation["sides"]["pro"]=[]
+          if not representation["sides"]["contra"]
+            representation["sides"]["contra"]=[]
           console.log "Delivering Statement:\n", JSON.stringify(representation, null, 2)
           return res.send representation
 
@@ -131,6 +135,7 @@ class exports.Server
       id=req.params.id
       side=req.params.side
       title=req.body.point
+      return res.send {error:"no title specified!"} unless title
       Statement.get id, (err,stmt) ->
         return res.send {error:err} if err
         Statement.create {title: title}, (err,point)->

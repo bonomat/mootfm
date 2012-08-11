@@ -1,58 +1,91 @@
 _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
 
+Backbone.View::close = ->
+  @remove()
+  @unbind()
+  @onClose() if @onClose
+
 Statement = Backbone.Model.extend(
   urlRoot:"../v0/statement",
 )
 
 StatementView = Backbone.View.extend(
+  events:
+    "click #pro_input_button": "proClick",
+    "click #contra_input_button": "contraClick",
 
   initialize: ()->
-    @el=$("#statement_container")
-    console.log "init",@model.toJSON()
+    $(@el).html _.template( $("#statement_template").html(), {})
     @model.bind "change", @render, @
     @model.bind "destroy", @close, @
     @model.bind "reset", @render, @
-
-    @render()
     return @
+
+  onClose: ->
+    @model.unbind "change", @render
+    @model.unbind "destroy", @render
+    @model.unbind "reset", @render
 
   render: ->
     # fix this extra error handler, why is this called with a model without stuff on it?
     return unless @model.get("title") and @model.get("sides")
-    console.log "render called:", @model.toJSON()
-    template = _.template( $("#statement_template").html(), {title: @model.get("title")});
-    @el.html template
+
+    $("#title").html _.template( $("#title_template").html(), {title: @model.get("title")});
+    $("#left-side #points").html ("")
+    $("#right-side #points").html ("")
     for point in @model.get("sides")["pro"]
-      @el.find("#left-side").append _.template( $("#point_template").html(), point);
-      console.log "pro point", point
+      $("#left-side #points").append _.template( $("#point_template").html(), point);
     for point in @model.get("sides")["contra"]
-      @el.find("#right-side").append _.template( $("#point_template").html(), point);
-      console.log "contra point", point
+      $("#right-side #points").append _.template( $("#point_template").html(), point);
+
+  proClick :->
+    point= $("#left-side textarea").val()
+    $("#left-side textarea").val("")
+    $.post "v0/statement/#{@model.get('id')}/side/pro", {point}, (data) =>
+      pro_points=@model.get("sides")["pro"]
+      pro_points.push({title:point, id:data["id"]})
+      @model.trigger('change')
+
+
+  contraClick : ->
+    point= $("#right-side textarea").val()
+    $("#right-side textarea").val("")
+    $.post "v0/statement/#{@model.get('id')}/side/contra", {point}, (data) =>
+      contra_points=@model.get("sides")["contra"]
+      contra_points.push({title:point, id:data["id"]})
+      @model.trigger('change')
 
   close: ->
       $(@el).unbind()
-      $(@el).remove()
+      $(@el).html _.template( $("#statement_template").html(), {})
 )
+
+class AppView
+  showView: (view) ->
+    @currentView.close()  if @currentView
+    @currentView = view
+    @currentView.render()
+    $("#statement_container").html @currentView.el
 
 AppRouter = Backbone.Router.extend(
   routes:
     "":"empty"
     ":id": "statement"
   empty: () ->
-    console.log "empty route called"
     @statement = new Statement(id: 456);
     @statement.fetch()
-    console.log "statement", @statement.toJSON()
-    @statementView = new StatementView(model: @statement)
+    statementView = new StatementView(model: @statement)
+    @appView.showView statementView
 
   statement: (id) ->
-    console.log "statement route called", id
     @statement = new Statement(id: id);
-    console.log "statement", @statement
     @statement.fetch()
-    @statementView = new StatementView(model: @statement)
+    statementView = new StatementView(model: @statement)
+    @appView.showView statementView
+
+  initialize: ->
+    @appView = new AppView()
 )
 
 app = new AppRouter()
 Backbone.history.start()
-
