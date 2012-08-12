@@ -76,35 +76,8 @@ class exports.Server
             else
               res.redirect('/login')
 
-    @app.get '/test', (req, res) ->
-      res.render 'test', {}
-
-    @app.get '/statement/:id', (req, res) ->
-      Statement.get req.params.id, (err,stmt) ->
-        console.log "DB statement", stmt
-        return res.render 'error', {error:err} if err
-        stmt.get_representation 1, (err, representation) ->
-          return res.render 'error', {error:err} if err
-          console.log "Delivering Statement:\n", JSON.stringify(representation, null, 2)
-          res.render 'statement', {statement: representation}
-
-    @app.post '/statement/:id/add', (req, res) ->
-      id=req.params.id
-      side=req.body.side
-      title=req.body.point
-      Statement.get id, (err,stmt) ->
-        return res.render 'error', {error:err} if err
-        Statement.create {title: title}, (err,point)->
-          point.argue stmt, side, (err)->
-            return res.redirect 'back'
-
     @app.get '/statement', (req, res) ->
-      res.render 'new_statement'
-
-    @app.post '/statement/new', (req, res) ->
-      Statement.create {title: req.body.title}, (err,stmt) ->
-        return res.render 'error', {error:err} if err
-        return res.redirect "/statement/#{stmt.id}"
+      res.render 'statement', {}
 
 # REST API
     version = "v0"

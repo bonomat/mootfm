@@ -1,40 +1,30 @@
-- if ('undefined' !== typeof errors && errors.length)
-  ul#errors
-    - each error in errors
-      li.error= error
 
 .container-fluid
-  .row-fluid
-  .span12
-    h2 #{statement.title}
-  .row-fluid
-  - var counter=0
-  each points, side in statement.sides
-    - counter=counter+1
-    h2 #{statement.length}
-    .span6
-      h3 #{side}
-      ul#points
-      each point, i in points
-        li.point
-          a(href='/statement/#{point.id}') #{point.title}
-      form(action='/statement/#{statement.id}/add', method='POST')
-        #side
-          input(type='hidden', name='side', value='#{side}')
-        #point
-          input(type='text', name='point', value='')
-        #submit
-          input(type='submit',style="position: absolute; left: -9999px") Moot
-  - if (counter<2)
-    .span4
-      form(action='/statement/#{statement.id}/add', method='POST')
-        #side
-          label(for='side') Side
-          input(type='text', name='side', value='')
-        #point
-          label(for='point') Point
-          input(type='text', name='point', value='')
-        #submit
-          input(type='submit', value='New Side with Point')
 
+#statement_container
 
+#templates(style='display:none')
+
+  #point_template(type="text/template")
+    li
+      a(href='#/{{id}}') {{title}}
+  #title_template(type="text/template")
+    h2 {{title}}
+  #statement_template(type="text/template")
+    .container-fluid
+      .row-fluid
+      .span12
+        #title
+      .row-fluid
+      .span6
+        h3 Pro
+        #left-side
+          #points
+          textarea#new_pro_point_template.input-xlarge(type="text", rows=3)
+      .span6
+        h3 Contra
+        #right-side
+          #points
+          textarea#new_contra_point_template.input-xlarge(type="text", rows=3)
+
+!= js('statement')
