@@ -125,8 +125,6 @@ class exports.Server
       side=req.params.side
       vote=req.body.vote
       return res.status(400).send {error:"no vote specified!"} unless vote==-1 or vote==1
-
-
       async.map [id, point_id], (item,callback)->
         Statement.get item, callback
       , (err, [stmt, point]) ->
