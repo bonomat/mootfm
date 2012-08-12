@@ -29,15 +29,17 @@ proxyProperty = (prop, isData) ->
 proxyProperty "id"
 proxyProperty "exists"
 proxyProperty "title", true
+proxyProperty "type", true
 
-Statement::_getFollowingRel = (other, side, callback) ->
+Statement::_getFollowingRel = (other, callback) ->
   query = "
     START statement=node(#{@id}), other=node(#{other.id})
-    MATCH (statement) -[rel?:#{side}]-> (other)
+    MATCH (statement) -[rel]-> (other)
     RETURN rel
   "
   db.query query,(err, results) ->
     return callback(err) if err
+    console.log "get rel", results
     rel = results[0] and results[0]["rel"]
     callback null, rel
 
@@ -47,35 +49,68 @@ Statement::save = (callback) ->
 Statement::del = (callback) ->
   @_node.del callback, true # true = yes, force it (delete all relationships)
 
+Statement::get_or_create_vote_point = (side,callback) ->
+  #get existing votepoint
+  query ="
+    START statement=node(#{@id}), votepoint=node:#{INDEX_NAME}(#{INDEX_KEY}=\"#{INDEX_VAL}\")
+    MATCH votepoint --> statement
+    WHERE has(votepoint.side) and votepoint.side = \"#{side}\"
+    RETURN votepoint
+    "
+  db.query query, (err, results) =>
+    return callback(err) if err
+    if results.length>1
+      return callback "DB inconsistent: Too many matching votepoints found in db"
+    if results.length==1
+      return callback null, results[0]["votepoint"]
+    else
+      votepoint = db.createNode({"type":"votepoint","side":side})
+      votepoint.save (err) =>
+        return callback(err)  if err
+        votepoint.index INDEX_NAME, INDEX_KEY, INDEX_VAL, (err) =>
+          return callback(err)  if err
+          votepoint.createRelationshipTo @_node, "", {}, (err)->
+            return callback(err)  if err
+            callback null, votepoint
+
 Statement::argue = (other, side, callback) ->
-  @_node.createRelationshipTo other._node, side, {}, callback
+  other.get_or_create_vote_point side,(err,votepoint)=>
+    return callback(err) if err
+    @_node.createRelationshipTo votepoint, "", {}, callback
+
+Statement::unargue = (other, side, callback) ->
+  other.get_or_create_vote_point side,(err,votepoint)=>
+    return callback(err)  if err
+    @_getFollowingRel votepoint, (err, rel) ->
+      return callback(err)  if err
+      console.log "REL",rel
+      return callback(null)  unless rel
+      console.log "deleting rel"
+      rel["delete"] (err)->
+        console.log "ERR",err
+        callback(err)
 
 Statement::vote = (point, side, vote, callback) ->
   total_votes=1
   callback null, total_votes
   #@_node.createRelationshipTo other._node, side, {}, callback
 
-Statement::unargue = (other,side, callback) ->
-  @_getFollowingRel other, side, (err, rel) ->
-    return callback(err)  if err
-    return callback(null)  unless rel
-    rel["delete"] callback
-
 Statement::getArguments = (callback) ->
   query ="
     START statement=node(#{@id}), arguments=node:#{INDEX_NAME}(#{INDEX_KEY}=\"#{INDEX_VAL}\")
-    MATCH (arguments) -[side]-> (statement)
-    RETURN arguments, TYPE(side)
+    MATCH arguments --> votepoint --> statement
+    RETURN arguments, votepoint.side
     "
+    #WHERE votepoint.type = \"votepoint\" and arguments.type = \"point\"
   db.query query, (err, results) ->
     return callback(err)  if err
     sides = {}
     i = 0
-    side_list = (result["TYPE(side)"] for result in results)
+    side_list = (result["votepoint.side"] for result in results)
     for side in side_list when side
       sides[side]=[]
     for result in results
-      sides[result["TYPE(side)"]].push new Statement(result["arguments"])
+      sides[result["votepoint.side"]].push new Statement(result["arguments"])
     callback null, sides
 
 # static methods:
@@ -87,6 +122,7 @@ Statement.get = (id, callback) ->
 
 # creates the statement and persists (saves) it to the db, incl. indexing it:
 Statement.create = (data, callback) ->
+  data["type"]="point"
   node = db.createNode(data)
   statement = new Statement(node)
   node.save (err) ->

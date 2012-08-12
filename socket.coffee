@@ -7,7 +7,7 @@ class exports.Server
     User = require './models/user'
 
     express = require 'express'
-    
+
     @user = new User 'test@gmail.com', 'test@gmail.com', 'test'
     @userTmpList = [ @user ]
 
@@ -105,6 +105,7 @@ class exports.Server
         return res.status(500).send {error:err} if err
         return res.status(201).send {id:stmt.id}
 
+    #make a new argument
     @app.post url_prefix+'/statement/:id/side/:side', (req, res) ->
       console.log "post statement side"
       id=req.params.id

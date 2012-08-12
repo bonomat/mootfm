@@ -17,6 +17,7 @@ describe "Statement:", ->
       return done(err) if err
       statement.exists.should.be.true
       statement.title.should.eql "Apple is crap"
+      statement.type.should.eql "point"
       done()
 
   it "delete statement", (done)->
@@ -38,6 +39,7 @@ describe "Statement:", ->
       Statement.get create_statement.id, (err,get_statement)->
         get_statement.should.eql create_statement
         get_statement.title.should.eql "Apple is crap"
+        get_statement.type.should.eql "point"
         done()
 
   it "save statement", (done)->
@@ -51,6 +53,7 @@ describe "Statement:", ->
         Statement.get create_statement.id, (err,get_statement)->
           get_statement.should.eql create_statement
           get_statement.title.should.eql "Facebook IPO was awesome"
+          get_statement.type.should.eql "point"
           done()
 
   it "retrieve non existant statement", (done)->
@@ -72,6 +75,22 @@ describe "Statement:", ->
           should.exist(err)
           done()
 
+  it "get or create votepoint", (done)->
+    statement_data=
+      title: "Apple is crap"
+    Statement.create statement_data, (err, statement)->
+      return done(err) if err
+      statement.get_or_create_vote_point "pro", (err, votepoint)->
+        return done(err) if err
+        should.exist votepoint, "no votepoint created"
+        votepoint.data.should.have.property 'type','votepoint', "votepoint type is wrong"
+        votepoint.should.have.property 'id'
+        statement.get_or_create_vote_point "pro", (err, votepoint2)->
+          return done(err) if err
+          votepoint2.id.should.eql votepoint.id, "votepoint ids do not match"
+          votepoint2.data.should.have.property 'type','votepoint', "votepoint2 type is wrong"
+          done()
+
   it "argue", (done)->
     statement_data=
       title: "Apple is crap"
@@ -82,9 +101,10 @@ describe "Statement:", ->
     , (err, [statement, pro_statement ]) ->
       return done(err) if err
       pro_statement.argue statement, "pro", (err)->
+        return done(err) if err
         statement.getArguments (err, all_arguments)->
           return done(err) if err
-          all_arguments.should.have.property('pro').with.lengthOf(1);
+          all_arguments.should.have.property('pro').with.lengthOf 1, "wrong pro arguments found"
           all_arguments["pro"][0].title.should.equal "Apple has child labour in China"
           done()
 
@@ -98,7 +118,9 @@ describe "Statement:", ->
     , (err, [statement, pro_statement ]) ->
       return done(err) if err
       pro_statement.argue statement, "pro", (err)->
+        return done(err) if err
         pro_statement.unargue statement, "pro", (err)->
+          return done(err) if err
           statement.getArguments (err, all_arguments)->
             return done(err) if err
             all_arguments.should.eql {}
