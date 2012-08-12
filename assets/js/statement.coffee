@@ -1,4 +1,6 @@
-_.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
+#_.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
+_.templateSettings.escape = /\{\{(.+?)\}\}/g;
+
 
 Backbone.View::close = ->
   @remove()
