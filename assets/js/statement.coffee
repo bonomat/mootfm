@@ -19,7 +19,6 @@ StatementView = Backbone.View.extend(
     @model.bind "change", @render, @
     @model.bind "destroy", @close, @
     @model.bind "reset", @render, @
-
     return @
 
   onClose: ->
@@ -84,15 +83,15 @@ AppRouter = Backbone.Router.extend(
     "":"empty"
     ":id": "statement"
   empty: () ->
-    @statement = new Statement(id: 1);
-    @statement.fetch()
-    statementView = new StatementView(model: @statement)
+    statement = new Statement(id: 1);
+    statement.fetch()
+    statementView = new StatementView(model: statement)
     @appView.showView statementView
 
   statement: (id) ->
-    @statement = new Statement(id: id);
-    @statement.fetch()
-    statementView = new StatementView(model: @statement)
+    statement = new Statement(id: id);
+    statement.fetch()
+    statementView = new StatementView(model: statement)
     @appView.showView statementView
 
   initialize: ->
