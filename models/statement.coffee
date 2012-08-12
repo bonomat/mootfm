@@ -50,6 +50,11 @@ Statement::del = (callback) ->
 Statement::argue = (other, side, callback) ->
   @_node.createRelationshipTo other._node, side, {}, callback
 
+Statement::vote = (point, side, vote, callback) ->
+  total_votes=1
+  callback null, total_votes
+  #@_node.createRelationshipTo other._node, side, {}, callback
+
 Statement::unargue = (other,side, callback) ->
   @_getFollowingRel other, side, (err, rel) ->
     return callback(err)  if err

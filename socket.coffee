@@ -1,3 +1,5 @@
+async = require "async"
+
 class exports.Server
 
   constructor: (@port) ->
@@ -5,7 +7,7 @@ class exports.Server
     User = require './models/user'
 
     express = require 'express'
-
+    
     @user = new User 'test@gmail.com', 'test@gmail.com', 'test'
     @userTmpList = [ @user ]
 
@@ -86,10 +88,10 @@ class exports.Server
       console.log "get statement"
       Statement.get req.params.id, (err,stmt) ->
         console.log "Error occured while loading statement:", err if err
-        return res.send 404 if err
+        return res.status(404).send {error:err} if err
         stmt.get_representation 1, (err, representation) ->
           console.log "Error occured while converting statement:", err if err
-          return res.send 500 if err
+          return res.status(500).send {error:err} if err
           if not representation["sides"]["pro"]
             representation["sides"]["pro"]=[]
           if not representation["sides"]["contra"]
@@ -100,8 +102,8 @@ class exports.Server
     @app.post url_prefix + '/statement', (req, res) ->
       console.log "post statement"
       Statement.create {title: req.body.title}, (err,stmt) ->
-        return res.send {error:err} if err
-        return res.send {id:stmt.id}, 201
+        return res.status(500).send {error:err} if err
+        return res.status(201).send {id:stmt.id}
 
     @app.post url_prefix+'/statement/:id/side/:side', (req, res) ->
       console.log "post statement side"
@@ -110,10 +112,29 @@ class exports.Server
       title=req.body.point
       return res.send {error:"no title specified!"} unless title
       Statement.get id, (err,stmt) ->
-        return res.send {error:err} if err
+        return res.status(404).send {error:err} if err
         Statement.create {title: title}, (err,point)->
+          return res.status(500).send {error:err} if err
           point.argue stmt, side, (err)->
-            return res.send {id:point.id}, 201
+            return res.status(201).send {id:point.id}
+
+    @app.post url_prefix+'/statement/:id/side/:side/vote/:point', (req, res) ->
+      console.log "post vote"
+      id=req.params.id
+      point_id=req.params.point
+      side=req.params.side
+      vote=req.body.vote
+      return res.status(400).send {error:"no vote specified!"} unless vote==-1 or vote==1
+
+
+      async.map [id, point_id], (item,callback)->
+        Statement.get item, callback
+      , (err, [stmt, point]) ->
+        console.log "found error", err if err
+        return res.status(404).send {error:err} if err
+        stmt.vote point, side, vote, (err,total_votes)->
+          return res.status(500).send {error:err} if err
+          return res.status(200).send {votes:total_votes}
 
 
 # Socket IO
