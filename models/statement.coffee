@@ -39,7 +39,6 @@ Statement::_getFollowingRel = (other, callback) ->
   "
   db.query query,(err, results) ->
     return callback(err) if err
-    console.log "get rel", results
     rel = results[0] and results[0]["rel"]
     callback null, rel
 
@@ -106,10 +105,11 @@ Statement::argue = (other, side, callback) ->
       callback err
 
 Statement::unargue = (other, side, callback) ->
-  other.get_or_create_vote_point @_node,side,(err,votepoint)=>
+  return callback("ERROR: not implemented")
+  other.get_or_create_argue_point @_node,side,(err,arguepoint)=>
     return callback(err)  if err
-    console.log votepoint
-    @_getFollowingRel votepoint, (err, rel) ->
+    console.log arguepoint
+    @_getFollowingRel arguepoint, (err, rel) ->
       return callback(err)  if err
       console.log "REL",rel
       return callback(null)  unless rel
@@ -126,7 +126,6 @@ Statement::getArguments = (callback) ->
     RETURN arguments, vote.side
     "
   db.query query, (err, results) =>
-    console.log "getArguments", results, @id
     return callback(err)  if err
     sides = {}
     i = 0

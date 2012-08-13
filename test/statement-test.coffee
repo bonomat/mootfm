@@ -97,7 +97,7 @@ describe "Statement:", ->
             votepoint2.data.should.have.property 'type','arguepoint', "votepoint2 type is wrong"
             done()
 
-  it "arguetest", (done)->
+  it "argue", (done)->
     statement_data=
       title: "Apple is crap"
     pro_statement_data=
@@ -115,8 +115,8 @@ describe "Statement:", ->
           done()
 
   it "unargue", (done)->
+    #TODO implement this test
     return done()
-    #TODO: implement this functionn
     statement_data=
       title: "Apple is crap"
     pro_statement_data=
