@@ -1,6 +1,7 @@
 should=require 'should'
 async = require "async"
 User = require "../models/user"
+Statement = require "../models/statement"
 
 DatabaseHelper = require "../models/db-helper"
 
@@ -170,7 +171,7 @@ describe "User:", ->
         db_users.username.should.eql "facebookUser"
         db_users.facebook_id.should.eql "unknownFacebookID"
         done()
-  
+
   it "tests validate user method with no errors", (done) ->
     newUserAttributes=
       email: 'philipp.hoenisch@gmail.com'
@@ -207,3 +208,84 @@ describe "User:", ->
     User.validateUser newUserAttributes, (errors) ->
       errors.should.include('No Password defined')
       done()
+
+
+
+describe "Voting:", ->
+  helper = new DatabaseHelper "http://localhost:7474"
+
+  beforeEach (done) =>
+    helper.delete_all_nodes (err)=>
+      return done(err) if err
+      user_data1=
+        name: "Tobias Hönisch"
+        email: "tobias@hoenisch.at"
+        password: "ultrasafepassword"
+      user_data2=
+        name: "Philipp Hönisch"
+        email: "philipp@hoenisch.at"
+        password: "even better password"
+      async.map [user_data1, user_data2 ], (user_data,callback)->
+        User.create user_data, callback
+      , (err, [@user1, @user2 ]) ->
+          return done(err) if err
+          done()
+
+  it "vote up", (done)->
+    statement_data=
+      title: "Apple is crap"
+    pro_statement_data=
+      title: "Apple has child labour in China"
+    async.map [statement_data, pro_statement_data ], (item,callback)->
+      Statement.create item, callback
+    , (err, [statement, pro_statement ]) ->
+      return done(err) if err
+      pro_statement.argue statement, "pro", (err)->
+        return done(err) if err
+        vote=1
+        @user1.vote statement, pro_statement, "pro", vote, (err,total_votes)->
+          return done(err) if err
+          total_votes.should.eql 1
+          done()
+
+  it "vote up 2 user", (done)->
+    statement_data=
+      title: "Apple is crap"
+    pro_statement_data=
+      title: "Apple has child labour in China"
+    async.map [statement_data, pro_statement_data ], (item,callback)->
+      Statement.create item, callback
+    , (err, [statement, pro_statement ]) ->
+      return done(err) if err
+      pro_statement.argue statement, "pro", (err)->
+        return done(err) if err
+        vote=1
+        @user1.vote statement, pro_statement, "pro", vote, (err,total_votes)->
+          return done(err) if err
+          total_votes.should.eql 1
+          @user2.vote statement, pro_statement, "pro", vote, (err,total_votes)->
+            return done(err) if err
+            total_votes.should.eql 2
+            done()
+
+  it "multiple vote 2 user", (done)->
+    statement_data=
+      title: "Apple is crap"
+    pro_statement_data=
+      title: "Apple has child labour in China"
+    async.map [statement_data, pro_statement_data ], (item,callback)->
+      Statement.create item, callback
+    , (err, [statement, pro_statement ]) ->
+      return done(err) if err
+      pro_statement.argue statement, "pro", (err)->
+        return done(err) if err
+        vote=1
+        @user1.vote statement, pro_statement, "pro", -1, (err,total_votes)->
+          return done(err) if err
+          total_votes.should.eql -1
+          @user2.vote statement, pro_statement, "pro", 1, (err,total_votes)->
+            return done(err) if err
+            total_votes.should.eql 0
+            done()
+
+

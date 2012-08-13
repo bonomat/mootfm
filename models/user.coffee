@@ -27,6 +27,7 @@ proxyProperty = (prop, isData) ->
 proxyProperty "id"
 proxyProperty "exists"
 proxyProperty "name", true
+proxyProperty "type", true
 proxyProperty "username", true
 proxyProperty "email", true
 proxyProperty "password", true
@@ -43,25 +44,36 @@ User::del = (callback) ->
 
 User::_get_vote_connection_or_create = (point, callback) ->
   query = "
-    START startpoint=node(#{@id}), endpoint=node(#{point.id}
-    MATCH startpoint -rel-> endpoint
+    START startpoint=node(#{@id}), endpoint=node(#{point.id})
+    MATCH startpoint -[rel]-> endpoint
     RETURN rel
     "
-  db.query query,(err, results) ->
+  db.query query,(err, results) =>
     return callback(err) if err
     if results.length>1
       return callback "DB inconsistent: Too many matching connections found in db"
     if results.length==1
       return callback null, results[0]["rel"]
     else
-      @_node.createRelationshipTo point._node, "", {}, callback
+      @_node.createRelationshipTo point, "", {}, callback
 
 User::vote = (stmt, point, side, vote, callback) ->
   stmt.get_or_create_argue_point point._node,side,(err,arguepoint)=>
-    @_get_vote_connection_or_create  arguepoint, (err, rel)->
+    @_get_vote_connection_or_create  arguepoint, (err, rel)=>
       return callback(err) if err
-      rel.vote=vote
-      rel.save callback
+      rel._data.data.vote=vote
+      rel.save (err)=>
+        query = "
+          START stmt=node(#{arguepoint.id}), users=node:#{INDEX_NAME}(#{INDEX_KEY}=\"#{INDEX_VAL}\")
+          MATCH users -[rel]-> stmt
+          RETURN sum(rel.vote)
+          "
+        db.query query,(err, results) =>
+          return callback(err) if err
+          if results.length==1
+            return callback null, results[0]["sum(rel.vote)"]
+          else
+            return callback null, 0
 
 # static methods:
 
@@ -88,6 +100,7 @@ User.get_by_facebook_id = (facebook_id, callback) ->
 
 # creates the user and persists (saves) it to the db, incl. indexing it:
 User.create = (data, callback) ->
+  data.type="user"
   node = db.createNode(data)
   user = new User(node)
   node.save (err) ->
