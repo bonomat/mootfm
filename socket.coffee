@@ -131,7 +131,7 @@ class exports.Server
       , (err, [stmt, point]) ->
         console.log "found error", err if err
         return res.status(404).send {error:err} if err
-        stmt.vote point, side, vote, (err,total_votes)->
+        @user.vote stmt, point, side, vote, (err,total_votes)->
           return res.status(500).send {error:err} if err
           return res.status(200).send {votes:total_votes}
 

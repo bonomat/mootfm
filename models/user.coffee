@@ -41,6 +41,28 @@ User::save = (callback) ->
 User::del = (callback) ->
   @_node.del callback, true # true = yes, force it (delete all relationships)
 
+User::_get_vote_connection_or_create = (point, callback) ->
+  query = "
+    START startpoint=node(#{@id}), endpoint=node(#{point.id}
+    MATCH startpoint -rel-> endpoint
+    RETURN rel
+    "
+  db.query query,(err, results) ->
+    return callback(err) if err
+    if results.length>1
+      return callback "DB inconsistent: Too many matching connections found in db"
+    if results.length==1
+      return callback null, results[0]["rel"]
+    else
+      @_node.createRelationshipTo point._node, "", {}, callback
+
+User::vote = (stmt, point, side, vote, callback) ->
+  stmt.get_or_create_argue_point point._node,side,(err,arguepoint)=>
+    @_get_vote_connection_or_create  arguepoint, (err, rel)->
+      return callback(err) if err
+      rel.vote=vote
+      rel.save callback
+
 # static methods:
 
 User.get = (id, callback) ->
