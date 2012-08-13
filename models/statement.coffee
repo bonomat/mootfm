@@ -49,54 +49,32 @@ Statement::del = (callback) ->
   @_node.del callback, true # true = yes, force it (delete all relationships)
 
 
-Statement::get_or_create_vote_point = (side,callback) ->
-  #get existing votepoint
-  query ="
-    START statement=node(#{@id}), vote=node:#{INDEX_NAME}(#{INDEX_KEY}=\"#{INDEX_VAL}\")
-    MATCH vote --> statement
-    WHERE has(vote.type) and vote.type=\"votepoint\" and has(vote.side) and vote.side = \"#{side}\"
-    RETURN vote
-    "
-  db.query query, (err, results) =>
-    return callback(err) if err
-    if results.length>1
-      return callback "DB inconsistent: Too many matching arguepoints found in db"
-    if results.length==1
-      return callback null, results[0]["vote"]
-    else
-      votepoint = db.createNode({"type":"votepoint","side":side})
-      votepoint.save (err) =>
-        return callback(err)  if err
-        votepoint.index INDEX_NAME, INDEX_KEY, INDEX_VAL, (err) =>
-          return callback(err)  if err
-          votepoint.createRelationshipTo @_node, "", {}, (err)->
-            return callback(err)  if err
-            callback null, votepoint
-
-
 Statement::get_or_create_argue_point = (source,side,callback) ->
-  #get existing arguepoint
+  @get_or_create_connection_point_by_type source,side, "arguepoint",callback
+
+Statement::get_or_create_connection_point_by_type = (source,side,type,callback) ->
+  #get existing connection
   query ="
-    START startpoint=node(#{source.id}), statement=node(#{@id}), argue=node:#{INDEX_NAME}(#{INDEX_KEY}=\"#{INDEX_VAL}\")
-    MATCH startpoint --> argue --> statement
-    WHERE has(argue.type) and argue.type=\"arguepoint\" and has(argue.side) and argue.side = \"#{side}\"
-    RETURN argue
+    START startpoint=node(#{source.id}), statement=node(#{@id}), middle=node:#{INDEX_NAME}(#{INDEX_KEY}=\"#{INDEX_VAL}\")
+    MATCH startpoint --> middle --> statement
+    WHERE has(middle.type) and middle.type=\"#{type}\" and has(middle.side) and middle.side = \"#{side}\"
+    RETURN middle
     "
   db.query query, (err, results) =>
     return callback(err) if err
     if results.length>1
-      return callback "DB inconsistent: Too many matching votepoints found in db"
+      return callback "DB inconsistent: Too many matching connections found in db"
     if results.length==1
-      return callback null, results[0]["argue"]
+      return callback null, results[0]["middle"]
     else
-      arguepoint = db.createNode({"type":"arguepoint","side":side})
-      arguepoint.save (err) =>
+      connection = db.createNode({"type":type,"side":side})
+      connection.save (err) =>
         return callback(err)  if err
-        arguepoint.index INDEX_NAME, INDEX_KEY, INDEX_VAL, (err) =>
+        connection.index INDEX_NAME, INDEX_KEY, INDEX_VAL, (err) =>
           return callback(err)  if err
-          arguepoint.createRelationshipTo @_node, "", {}, (err)->
+          connection.createRelationshipTo @_node, "", {}, (err,rel)->
             return callback(err)  if err
-            callback null, arguepoint
+            callback null, connection
 
 Statement::argue = (other, side, callback) ->
   other.get_or_create_argue_point @_node,side,(err,arguepoint)=>
