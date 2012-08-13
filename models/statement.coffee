@@ -76,17 +76,20 @@ Statement::get_or_create_vote_point = (side,callback) ->
 Statement::argue = (other, side, callback) ->
   other.get_or_create_vote_point side,(err,votepoint)=>
     return callback(err) if err
-    @_node.createRelationshipTo votepoint, "", {}, callback
+    @_node.createRelationshipTo votepoint, "", {}, (err)->
+      callback err
 
 Statement::unargue = (other, side, callback) ->
+  return callback "not working - do not use this function until tested"
   other.get_or_create_vote_point side,(err,votepoint)=>
     return callback(err)  if err
+    console.log votepoint
     @_getFollowingRel votepoint, (err, rel) ->
       return callback(err)  if err
       console.log "REL",rel
       return callback(null)  unless rel
       console.log "deleting rel"
-      rel["delete"] (err)->
+      rel.del (err)->
         console.log "ERR",err
         callback(err)
 
