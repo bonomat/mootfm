@@ -120,20 +120,27 @@ class exports.Server
             return res.status(201).send {id:point.id}
 
     @app.post url_prefix+'/statement/:id/side/:side/vote/:point', (req, res) ->
-      console.log "post vote"
-      id=req.params.id
-      point_id=req.params.point
-      side=req.params.side
-      vote=req.body.vote
-      return res.status(400).send {error:"no vote specified!"} unless vote==-1 or vote==1
-      async.map [id, point_id], (item,callback)->
-        Statement.get item, callback
-      , (err, [stmt, point]) ->
-        console.log "found error", err if err
-        return res.status(404).send {error:err} if err
-        @user.vote stmt, point, side, vote, (err,total_votes)->
-          return res.status(500).send {error:err} if err
-          return res.status(200).send {votes:total_votes}
+      ###### FIX ME #####
+      user_data=
+        name: "Tobias Hönisch"
+        email: "tobias@hoenisch.at"
+        password: "ultrasafepassword"
+      User.create user_data, (err, user)->
+      ####################
+
+        console.log "post vote"
+        id=req.params.id
+        point_id=req.params.point
+        side=req.params.side
+        vote=req.body.vote
+        return res.status(400).send {error:"no vote specified!"} unless vote==-1 or vote==1
+        async.map [id, point_id], (item,callback)->
+          Statement.get item, callback
+        , (err, [stmt, point]) ->
+          return res.status(404).send {error:err} if err
+          user.vote stmt, point, side, vote, (err,total_votes)->
+            return res.status(500).send {error:err} if err
+            return res.status(200).send {votes:total_votes}
 
 
 # Socket IO
