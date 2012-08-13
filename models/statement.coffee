@@ -49,20 +49,21 @@ Statement::save = (callback) ->
 Statement::del = (callback) ->
   @_node.del callback, true # true = yes, force it (delete all relationships)
 
+
 Statement::get_or_create_vote_point = (side,callback) ->
   #get existing votepoint
   query ="
-    START statement=node(#{@id}), votepoint=node:#{INDEX_NAME}(#{INDEX_KEY}=\"#{INDEX_VAL}\")
-    MATCH votepoint --> statement
-    WHERE has(votepoint.side) and votepoint.side = \"#{side}\"
-    RETURN votepoint
+    START statement=node(#{@id}), vote=node:#{INDEX_NAME}(#{INDEX_KEY}=\"#{INDEX_VAL}\")
+    MATCH vote --> statement
+    WHERE has(vote.type) and vote.type=\"votepoint\" and has(vote.side) and vote.side = \"#{side}\"
+    RETURN vote
     "
   db.query query, (err, results) =>
     return callback(err) if err
     if results.length>1
-      return callback "DB inconsistent: Too many matching votepoints found in db"
+      return callback "DB inconsistent: Too many matching arguepoints found in db"
     if results.length==1
-      return callback null, results[0]["votepoint"]
+      return callback null, results[0]["vote"]
     else
       votepoint = db.createNode({"type":"votepoint","side":side})
       votepoint.save (err) =>
@@ -73,15 +74,39 @@ Statement::get_or_create_vote_point = (side,callback) ->
             return callback(err)  if err
             callback null, votepoint
 
-Statement::argue = (other, side, callback) ->
-  other.get_or_create_vote_point side,(err,votepoint)=>
+
+Statement::get_or_create_argue_point = (source,side,callback) ->
+  #get existing arguepoint
+  query ="
+    START startpoint=node(#{source.id}), statement=node(#{@id}), argue=node:#{INDEX_NAME}(#{INDEX_KEY}=\"#{INDEX_VAL}\")
+    MATCH startpoint --> argue --> statement
+    WHERE has(argue.type) and argue.type=\"arguepoint\" and has(argue.side) and argue.side = \"#{side}\"
+    RETURN argue
+    "
+  db.query query, (err, results) =>
     return callback(err) if err
-    @_node.createRelationshipTo votepoint, "", {}, (err)->
+    if results.length>1
+      return callback "DB inconsistent: Too many matching votepoints found in db"
+    if results.length==1
+      return callback null, results[0]["argue"]
+    else
+      arguepoint = db.createNode({"type":"arguepoint","side":side})
+      arguepoint.save (err) =>
+        return callback(err)  if err
+        arguepoint.index INDEX_NAME, INDEX_KEY, INDEX_VAL, (err) =>
+          return callback(err)  if err
+          arguepoint.createRelationshipTo @_node, "", {}, (err)->
+            return callback(err)  if err
+            callback null, arguepoint
+
+Statement::argue = (other, side, callback) ->
+  other.get_or_create_argue_point @_node,side,(err,arguepoint)=>
+    return callback(err) if err
+    @_node.createRelationshipTo arguepoint, "", {}, (err)->
       callback err
 
 Statement::unargue = (other, side, callback) ->
-  return callback "not working - do not use this function until tested"
-  other.get_or_create_vote_point side,(err,votepoint)=>
+  other.get_or_create_vote_point @_node,side,(err,votepoint)=>
     return callback(err)  if err
     console.log votepoint
     @_getFollowingRel votepoint, (err, rel) ->
@@ -93,27 +118,23 @@ Statement::unargue = (other, side, callback) ->
         console.log "ERR",err
         callback(err)
 
-Statement::vote = (point, side, vote, callback) ->
-  total_votes=1
-  callback null, total_votes
-  #@_node.createRelationshipTo other._node, side, {}, callback
-
 Statement::getArguments = (callback) ->
   query ="
-    START statement=node(#{@id}), arguments=node:#{INDEX_NAME}(#{INDEX_KEY}=\"#{INDEX_VAL}\")
-    MATCH arguments --> votepoint --> statement
-    RETURN arguments, votepoint.side
+    START statement=node(#{@id}), arguments=node:#{INDEX_NAME}(#{INDEX_KEY}=\"#{INDEX_VAL}\"), vote=node:#{INDEX_NAME}(#{INDEX_KEY}=\"#{INDEX_VAL}\")
+    MATCH arguments --> vote --> statement
+    WHERE vote.type = \"arguepoint\" and arguments.type = \"point\"
+    RETURN arguments, vote.side
     "
-    #WHERE votepoint.type = \"votepoint\" and arguments.type = \"point\"
-  db.query query, (err, results) ->
+  db.query query, (err, results) =>
+    console.log "getArguments", results, @id
     return callback(err)  if err
     sides = {}
     i = 0
-    side_list = (result["votepoint.side"] for result in results)
+    side_list = (result["vote.side"] for result in results)
     for side in side_list when side
       sides[side]=[]
     for result in results
-      sides[result["votepoint.side"]].push new Statement(result["arguments"])
+      sides[result["vote.side"]].push new Statement(result["arguments"])
     callback null, sides
 
 # static methods:

@@ -75,23 +75,29 @@ describe "Statement:", ->
           should.exist(err)
           done()
 
-  it "get or create votepoint", (done)->
+  it "get or create arguepoint", (done)->
     statement_data=
       title: "Apple is crap"
-    Statement.create statement_data, (err, statement)->
+    pro_statement_data=
+      title: "Apple has child labour in China"
+    async.map [statement_data, pro_statement_data ], (item,callback)->
+      Statement.create item, callback
+    , (err, [statement, pro_statement ]) ->
       return done(err) if err
-      statement.get_or_create_vote_point "pro", (err, votepoint)->
+      statement.get_or_create_argue_point pro_statement._node,"pro", (err, arguepoint)->
         return done(err) if err
-        should.exist votepoint, "no votepoint created"
-        votepoint.data.should.have.property 'type','votepoint', "votepoint type is wrong"
-        votepoint.should.have.property 'id'
-        statement.get_or_create_vote_point "pro", (err, votepoint2)->
+        should.exist arguepoint, "no arguepoint created"
+        arguepoint.data.should.have.property 'type','arguepoint', "arguepoint type is wrong"
+        arguepoint.should.have.property 'id'
+        pro_statement._node.createRelationshipTo arguepoint, "", {}, (err)->
           return done(err) if err
-          votepoint2.id.should.eql votepoint.id, "votepoint ids do not match"
-          votepoint2.data.should.have.property 'type','votepoint', "votepoint2 type is wrong"
-          done()
+          statement.get_or_create_argue_point pro_statement._node,"pro", (err, votepoint2)->
+            return done(err) if err
+            votepoint2.id.should.eql arguepoint.id, "arguepoint ids do not match"
+            votepoint2.data.should.have.property 'type','arguepoint', "votepoint2 type is wrong"
+            done()
 
-  it "argue", (done)->
+  it "arguetest", (done)->
     statement_data=
       title: "Apple is crap"
     pro_statement_data=
