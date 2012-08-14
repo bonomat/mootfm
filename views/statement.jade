@@ -1,4 +1,3 @@
-
 .container-fluid
 
 #statement_container
@@ -6,10 +5,18 @@
 #templates(style='display:none')
 
   #point_template(type="text/template")
-    li
+    .well(rows=3)
+      .pull-right
+        ul
+          .unstyled
+            i.icon-thumbs-up
+          .unstyled
+            i.icon-thumbs-down
       a(href='#/{{id}}') {{title}}
+
   #title_template(type="text/template")
-    h2 {{title}}
+    .well
+      h2 {{title}}
   #statement_template(type="text/template")
     .container-fluid
       .row-fluid
@@ -20,11 +27,11 @@
         h3 Pro
         #left-side
           #points
-          textarea#new_pro_point_template.input-xlarge(type="text", rows=3)
+          textarea.field.span6#new_pro_point_template.input-xlarge(type="text", rows=3)
       .span6
         h3 Contra
         #right-side
           #points
-          textarea#new_contra_point_template.input-xlarge(type="text", rows=3)
+          textarea.field.span6#new_contra_point_template.input-xlarge(type="text", rows=3)
 
 != js('statement')
