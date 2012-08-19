@@ -5,10 +5,6 @@ User = module.exports = User = (@_node) ->
 neo4j = require("neo4j")
 db = new neo4j.GraphDatabase(process.env.NEO4J_URL or "http://localhost:7474")
 
-INDEX_NAME = "nodes"
-INDEX_KEY = "type"
-INDEX_VAL = "user"
-
 proxyProperty = (prop, isData) ->
   Object.defineProperty User::, prop,
     get: ->
@@ -64,8 +60,9 @@ User::vote = (stmt, point, side, vote, callback) ->
       rel._data.data.vote=vote
       rel.save (err)=>
         query = "
-          START stmt=node(#{arguepoint.id}), users=node:#{INDEX_NAME}(#{INDEX_KEY}=\"#{INDEX_VAL}\")
+          START stmt=node(#{arguepoint.id}), users=node:nodes(type=\"user\")
           MATCH users -[rel]-> stmt
+          WHERE users.type = \"user\" and users.type = \"user\" and has(rel.vote)
           RETURN sum(rel.vote)
           "
         db.query query,(err, results) =>
@@ -105,7 +102,7 @@ User.create = (data, callback) ->
   user = new User(node)
   node.save (err) ->
     return callback(err)  if err
-    node.index INDEX_NAME, INDEX_KEY, INDEX_VAL, (err) ->
+    node.index "nodes", "type", "user", (err) ->
       return callback(err)  if err
       callback null, user
 
@@ -165,7 +162,7 @@ User.validateUser = (newUserAttributes, callback) ->
 
 User._get_by_property = (property, value, callback) ->
   query = "
-    START n=node:#{INDEX_NAME}(#{INDEX_KEY}= \"#{INDEX_VAL}\")
+    START n=node:nodes(type= \"user\")
     WHERE n.#{property} = \"#{value}\"
     RETURN n
   "
