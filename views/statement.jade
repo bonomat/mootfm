@@ -7,12 +7,14 @@
   #point_template(type="text/template")
     .well(rows=3)
       .pull-right
+        h3
+          {{vote}}
         ul
           .unstyled
             i.icon-thumbs-up
           .unstyled
             i.icon-thumbs-down
-      a(href='#/{{id}}') {{title}}
+      a(href='#/{{point_id}}') {{title}}
 
   #title_template(type="text/template")
     .well

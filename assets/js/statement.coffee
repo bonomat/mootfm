@@ -36,9 +36,11 @@ StatementView = Backbone.View.extend(
     $("#left-side #points").html ("")
     $("#right-side #points").html ("")
     for point in @model.get("sides")["pro"]
-      $("#left-side #points").append _.template( $("#point_template").html(), point);
+      data={statement_id:@model.get("id"), point_id:point["id"], vote:point["vote"], title: point["title"], side:"pro"}
+      $("#left-side #points").append _.template( $("#point_template").html(), data);
     for point in @model.get("sides")["contra"]
-      $("#right-side #points").append _.template( $("#point_template").html(), point);
+      data={statement_id:@model.get("id"), point_id:point["id"], vote:point["vote"], title: point["title"], side:"contra"}
+      $("#right-side #points").append _.template( $("#point_template").html(), data);
 
   proClick :->
     point= $("#left-side textarea").val()
@@ -46,7 +48,7 @@ StatementView = Backbone.View.extend(
     $("#left-side textarea").val("")
     $.post "v0/statement/#{@model.get('id')}/side/pro", {point}, (data) =>
       pro_points=@model.get("sides")["pro"]
-      pro_points.push({title:point, id:data["id"]})
+      pro_points.push({title:point, id:data["id"], vote:data["vote"]})
       @model.trigger('change')
 
   pro_keydown: (e)->
@@ -65,7 +67,7 @@ StatementView = Backbone.View.extend(
     $("#right-side textarea").val("")
     $.post "v0/statement/#{@model.get('id')}/side/contra", {point}, (data) =>
       contra_points=@model.get("sides")["contra"]
-      contra_points.push({title:point, id:data["id"]})
+      contra_points.push({title:point, id:data["id"], vote:data["vote"]})
       @model.trigger('change')
 
   close: ->
