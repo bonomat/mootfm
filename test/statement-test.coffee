@@ -1,6 +1,7 @@
 should=require 'should'
 async = require "async"
 Statement = require "../models/statement"
+User = require '../models/user'
 
 DatabaseHelper = require "../models/db-helper"
 
@@ -127,45 +128,60 @@ describe "Statement:", ->
       return done(err) if err
       pro_statement.argue statement, "pro", (err)->
         return done(err) if err
-        console.log "before"
         pro_statement.unargue statement, "pro", (err)->
-          console.log "after"
           return done(err) if err
           statement.getArguments (err, all_arguments)->
             return done(err) if err
             all_arguments.should.eql {}
             done()
 
+
+
   it "convert to representation lv 1", (done)->
-    statement_data=
-      title: "Apple is crap"
-    pro_statement_data=
-      title: "Apple has child labour in China"
-    contra_statement_data=
-      title: "Apple has best selling smart phone"
-    async.map [statement_data, pro_statement_data,contra_statement_data ], (item,callback)->
-      Statement.create item, callback
-    , (err, [statement, pro_statement, contra_statement ]) ->
-      return done(err) if err
-      async.map [[pro_statement,"pro"],[contra_statement,"contra"] ], ([argument, side],callback)->
-        argument.argue statement, side, callback
-      , (err) ->
+    user_data=
+      name: "Tobias Hönisch"
+      email: "tobias@hoenisch.at"
+      password: "ultrasafepassword"
+    User.create user_data, (err, user)->
+      statement_data=
+        title: "Apple is crap"
+      pro_statement_data=
+        title: "Apple has child labour in China"
+      contra_statement_data=
+        title: "Apple has best selling smart phone"
+      async.map [statement_data, pro_statement_data,contra_statement_data ], (item,callback)->
+        Statement.create item, callback
+      , (err, [statement, pro_statement, contra_statement ]) ->
         return done(err) if err
-        statement.get_representation 1, (err, representation)->
+        async.map [[pro_statement,"pro"],[contra_statement,"contra"] ], ([argument, side],callback)->
+          argument.argue statement, side, callback
+        , (err) ->
           return done(err) if err
-          representation.should.have.property('title',"Apple is crap")
-          representation.should.have.property('id')
-          representation.should.have.property('sides')
-          sides=representation["sides"]
-          sides.should.have.property('pro').with.lengthOf(1);
-          sides.should.have.property('contra').with.lengthOf(1);
-          sides["pro"][0].should.have.property('title', "Apple has child labour in China")
-          sides["pro"][0].should.have.property('id')
-          sides["pro"][0].should.not.have.property('sides')
-          sides["contra"][0].should.have.property('title', "Apple has best selling smart phone")
-          sides["contra"][0].should.have.property('id')
-          sides["contra"][0].should.not.have.property('sides')
-          done()
+          statement.get_representation 1, (err, representation)=>
+            return done(err) if err
+            representation.should.have.property('title',"Apple is crap")
+            representation.should.have.property('id')
+            representation.should.have.property('sides')
+            sides=representation["sides"]
+            sides.should.have.property('pro').with.lengthOf(1);
+            sides.should.have.property('contra').with.lengthOf(1);
+            sides["pro"][0].should.have.property('title', "Apple has child labour in China")
+            sides["pro"][0].should.have.property('id')
+            sides["pro"][0].should.not.have.property('sides')
+            sides["pro"][0].should.have.property('vote',0)
+            sides["contra"][0].should.have.property('title', "Apple has best selling smart phone")
+            sides["contra"][0].should.have.property('id')
+            sides["contra"][0].should.not.have.property('sides')
+            sides["pro"][0].should.have.property('vote',0)
+            user.vote statement, pro_statement, "pro", 1, (err,total_votes)=>
+              return done(err) if err
+              statement.get_representation 1, (err, representation)=>
+                return done(err) if err
+                representation.should.have.property('sides')
+                sides=representation["sides"]
+                sides["pro"][0].should.have.property('vote',1, "we should see the correct number of votes=1")
+                done()
+
 
   it "convert to representation lv 0", (done)->
     statement_data=
@@ -188,3 +204,34 @@ describe "Statement:", ->
           representation.should.have.property('id')
           representation.should.not.have.property('sides')
           done()
+
+it "voting", (done)->
+    user_data=
+      name: "Tobias Hönisch"
+      email: "tobias@hoenisch.at"
+      password: "ultrasafepassword"
+    User.create user_data, (err, user)->
+      statement_data=
+        title: "Apple is crap"
+      pro1_statement_data=
+        title: "Apple has child labour in China"
+      pro2_statement_data=
+        title: "Apple has best selling smart phone"
+      async.map [statement_data, pro1_statement_data,pro2_statement_data ], (item,callback)=>
+        Statement.create item, callback
+      , (err, [statement, pro1_statement, pro2_statement ]) =>
+        return done(err) if err
+        async.map [pro1_statement,pro2_statement ], (argument,callback)=>
+          argument.argue statement, "pro", callback
+        , (err) ->
+          return done(err) if err
+          Statement.get_votes statement, pro1_statement, "pro", (err, votes) ->
+            return done(err) if err
+            votes.should.eql 0
+            user.vote statement, pro1_statement, "pro", -1, (err,total_votes)=>
+              return done(err) if err
+              total_votes.should.eql -1
+              Statement.get_votes statement, pro1_statement, "pro", (err, votes) ->
+                return done(err) if err
+                votes.should.eql -1
+                done()

@@ -7,10 +7,6 @@ async = require "async"
 
 db = new neo4j.GraphDatabase(process.env.NEO4J_URL or "http://localhost:7474")
 
-INDEX_NAME = "nodes"
-INDEX_KEY = "type"
-INDEX_VAL = "statements"
-
 proxyProperty = (prop, isData) ->
   Object.defineProperty Statement::, prop,
     get: ->
@@ -55,7 +51,7 @@ Statement::get_or_create_argue_point = (source,side,callback) ->
 Statement::get_or_create_connection_point_by_type = (source,side,type,callback) ->
   #get existing connection
   query ="
-    START startpoint=node(#{source.id}), statement=node(#{@id}), middle=node:#{INDEX_NAME}(#{INDEX_KEY}=\"#{INDEX_VAL}\")
+    START startpoint=node(#{source.id}), statement=node(#{@id}), middle=node:nodes(type=\"votepoint\")
     MATCH startpoint --> middle --> statement
     WHERE has(middle.type) and middle.type=\"#{type}\" and has(middle.side) and middle.side = \"#{side}\"
     RETURN middle
@@ -63,14 +59,16 @@ Statement::get_or_create_connection_point_by_type = (source,side,type,callback) 
   db.query query, (err, results) =>
     return callback(err) if err
     if results.length>1
-      return callback "DB inconsistent: Too many matching connections found in db"
+      #return callback null, results[0]["middle"]
+      #TODO log a warning that there are db inconsistencies!
+      return callback "DB inconsistent: Too many matching connections found in db:"+ results
     if results.length==1
       return callback null, results[0]["middle"]
     else
       connection = db.createNode({"type":type,"side":side})
       connection.save (err) =>
         return callback(err)  if err
-        connection.index INDEX_NAME, INDEX_KEY, INDEX_VAL, (err) =>
+        connection.index "nodes", "type", "votepoint", (err) =>
           return callback(err)  if err
           connection.createRelationshipTo @_node, "", {}, (err,rel)->
             return callback(err)  if err
@@ -86,20 +84,16 @@ Statement::unargue = (other, side, callback) ->
   return callback("ERROR: not implemented")
   other.get_or_create_argue_point @_node,side,(err,arguepoint)=>
     return callback(err)  if err
-    console.log arguepoint
     @_getFollowingRel arguepoint, (err, rel) ->
       return callback(err)  if err
-      console.log "REL",rel
       return callback(null)  unless rel
-      console.log "deleting rel"
       rel.del (err)->
-        console.log "ERR",err
         callback(err)
 
 Statement::getArguments = (callback) ->
   query ="
-    START statement=node(#{@id}), arguments=node:#{INDEX_NAME}(#{INDEX_KEY}=\"#{INDEX_VAL}\"), vote=node:#{INDEX_NAME}(#{INDEX_KEY}=\"#{INDEX_VAL}\")
-    MATCH arguments --> vote --> statement
+    START main=node(#{@id}), arguments=node:nodes(type=\"statement\"), vote=node:nodes(type=\"votepoint\")
+    MATCH arguments --> vote --> main
     WHERE vote.type = \"arguepoint\" and arguments.type = \"point\"
     RETURN arguments, vote.side
     "
@@ -128,9 +122,27 @@ Statement.create = (data, callback) ->
   statement = new Statement(node)
   node.save (err) ->
     return callback(err)  if err
-    node.index INDEX_NAME, INDEX_KEY, INDEX_VAL, (err) ->
+    node.index "nodes", "type", "statement", (err) ->
       return callback(err)  if err
       callback null, statement
+
+
+Statement.get_votes = (stmt, point, side, callback) ->
+  # gets the user votes for points in regards to stmt
+  stmt.get_or_create_argue_point point._node,side,(err,arguepoint)=>
+    return callback(err) if err
+    query = "
+      START vote=node(#{arguepoint.id}), users=node:nodes(type=\"user\")
+      MATCH users -[rel]-> vote
+      WHERE users.type = \"user\" and users.type = \"user\" and has(rel.vote)
+      RETURN sum(rel.vote)
+      "
+    db.query query,(err, results) =>
+      return callback("DB error for get_votes: "+err) if err
+      if results.length==1
+        return callback null, results[0]["sum(rel.vote)"]
+      else
+        return callback null, 0
 
 # creates a json compatible representation of this statement
 Statement::get_representation = (level, callback) ->
@@ -141,12 +153,18 @@ Statement::get_representation = (level, callback) ->
   @getArguments (err, argument_dict) =>
     return callback(err) if err
     sides={}
-    async.forEach ([side,stmt_arguments] for side, stmt_arguments of argument_dict), ([side,stmt_arguments],callback)->
-      async.map stmt_arguments, (argument,callback)->
-        argument.get_representation level-1, callback
+    async.forEach ([side,stmt_arguments] for side, stmt_arguments of argument_dict), ([side,stmt_arguments],callback)=>
+      async.map stmt_arguments, (argument,callback)=>
+        argument.get_representation level-1, (err, representation)=>
+          return callback(err) if err
+          Statement.get_votes @,argument,side, (err, votes)=>
+            return callback(err) if err
+            representation.vote=votes
+            callback null, representation
       , (err, side_arguments) ->
         return callback(err) if err
         sides[side]=side_arguments
+
         callback null
     , (err) ->
       return callback(err) if err
