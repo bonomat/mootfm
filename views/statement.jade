@@ -19,12 +19,17 @@
   #title_template(type="text/template")
     .well
       #title
-        h2 {{title}}
+        center
+          h2 {{title}}
   #statement_template(type="text/template")
     .container-fluid
       .row-fluid
-      .span12
+      .span2
+        img(src="logo200.jpg", height="100", width="100")
+      .span8
         #title
+      .span2
+        a(href="mailto:info@moot.fm?Subject=MootFM is awesome!") info@moot.fm
       .row-fluid
       .span6
         h3 Pro
