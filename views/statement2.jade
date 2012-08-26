@@ -1,0 +1,34 @@
+.container-fluid
+
+.container-fluid
+  .row-fluid
+  .span12
+    #title
+  .row-fluid
+  .span6
+    h3 Pro
+    #left-side
+  .span6
+    h3 Contra
+    #right-side
+
+#templates(style='display:none')
+
+  #title_template(type="text/template")
+    .well
+      #title
+        h2 {{title}}
+
+  #point_template(type="text/template")
+    .well(rows=3)
+      .pull-right
+        h3
+          {{vote}}
+        ul
+          .unstyled
+            i.icon-thumbs-up
+          .unstyled
+            i.icon-thumbs-down
+      a(href='#/{{point_id}}') {{title}}
+
+!= js('controler')

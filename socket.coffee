@@ -18,6 +18,8 @@ class exports.Server
     # convert existing coffeescript, styl, and less resources to js and css for the browser
     @app.use require('connect-assets')()
 
+    @app.use require("browserify")()
+
     @app.use express.bodyParser()
 
 
@@ -80,6 +82,9 @@ class exports.Server
 
     @app.get '/statement', (req, res) ->
       res.render 'statement', {}
+
+    @app.get '/statement2', (req, res) ->
+      res.render 'statement2', {}
 
 # REST API
     version = "v0"
