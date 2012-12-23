@@ -17,12 +17,11 @@ class exports.Server
 
     # convert existing coffeescript, styl, and less resources to js and css for the browser
     @app.use require('connect-assets')()
-
-    @app.use require("browserify")()
-
+    
     @app.use express.bodyParser()
-
-
+    
+    # browserify for concatenation of the client js
+    @app.use(require('browserify')(__dirname + '/assets/js/controler.coffee'))
     @app.set('views', __dirname + '/views')
     @app.set('view engine', 'jade')
     @app.use(express.bodyParser())

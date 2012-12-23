@@ -11,7 +11,7 @@ module.exports.Title = Backbone.Model.extend(
       picture_url: "./placeholder.gif"
 )
 
-module.exports.Point = Backbone.Model.extend(
+module.exports.Point = Point= Backbone.Model.extend(
   defaults:
     id: 0
     title: ""
