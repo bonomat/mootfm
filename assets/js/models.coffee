@@ -24,4 +24,11 @@ module.exports.Point = Point= Backbone.Model.extend(
       picture_url: "./placeholder.gif"
 )
 
-module.exports.Side = Backbone.Collection.extend(model: Point)
+module.exports.Side = Backbone.Collection.extend
+  model: Point
+  comparator: (point)->
+    return point.get("votes")*-1
+  initialize: ->
+    @bind "change", ->
+      @sort()
+

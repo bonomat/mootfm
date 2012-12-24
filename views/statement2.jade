@@ -1,6 +1,4 @@
 .container-fluid
-
-.container-fluid
   .row-fluid
   .span12
     #title
@@ -23,12 +21,13 @@
     .well(rows=3)
       .pull-right
         h3
-          {{vote}}
+          {{votes}}
         ul
           .unstyled
             i.icon-thumbs-up
           .unstyled
             i.icon-thumbs-down
       a(href='#/{{point_id}}') {{title}}
+
 
 script(src="/browserify.js")
