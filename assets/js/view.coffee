@@ -1,4 +1,4 @@
-module.exports.TitleView = Backbone.View.extend(
+module.exports.TitleView = Backbone.View.extend
   initialize: ->
     @render()
 
@@ -8,4 +8,3 @@ module.exports.TitleView = Backbone.View.extend(
     
     # Load the compiled HTML into the Backbone "el"
     $(@el).html template @model.toJSON()
-)
