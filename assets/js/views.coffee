@@ -27,7 +27,7 @@ module.exports.PointView = PointView = Backbone.View.extend
 module.exports.SideView = Backbone.View.extend(
   initialize : (options) ->
     _(this).bindAll "add", "remove"
-    @_pointViews = []
+    @_pointViews = {}
     @collection.each @add
     @collection.bind "add", @add
     @collection.bind "remove", @remove
@@ -39,8 +39,10 @@ module.exports.SideView = Backbone.View.extend(
     # We keep track of the rendered state of the view
     @_rendered = true
     $(@el).empty()
-    _(@_pointViews).each (point_view) =>
-      $(@el).append point_view.render().el
+    sorted_ids = @collection.pluck "id"
+    _(sorted_ids).each (id) =>
+      pointView=@_pointViews[id]
+      $(@el).append pointView.render().el
     return @
 
   add: (point) ->
@@ -51,11 +53,12 @@ module.exports.SideView = Backbone.View.extend(
     )
 
     # And add it to the collection so that it's easy to reuse.
-    @_pointViews.push pointview
+    @_pointViews[point.get("id")] = pointview
+
+    index=@collection.indexOf(point)
 
     # If the view has been rendered, then
     # we immediately append the rendered donut.
-    index=@collection.indexOf(point)
     if @_rendered
       rendered_item=pointview.render().$el
       if (index==@collection.length-1)

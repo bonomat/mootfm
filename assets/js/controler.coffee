@@ -62,6 +62,4 @@ sideView = new views.SideView
 
 pro_side.add pro2
 
-#pro2.set(votes:99)
-
-
+pro2.set(votes:99)
