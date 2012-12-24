@@ -22,6 +22,7 @@ class exports.Server
     
     # browserify for concatenation of the client js
     @app.use(require('browserify')(__dirname + '/assets/js/controler.coffee'))
+    
     @app.set('views', __dirname + '/views')
     @app.set('view engine', 'jade')
     @app.use(express.bodyParser())

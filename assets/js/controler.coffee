@@ -1,6 +1,10 @@
 # require dependency
 view = require "./view.coffee"
-model = require "./model.coffee"
+models = require "./models.coffee"
 
-titleView = new view.TitleView(el: $("#title"))
-titleView.setTitle(new model.Title title:"Apple sucks")
+console.log "Controler Loaded"
+titleView = new view.TitleView
+  el: $("#title")
+  model: new models.Title(title:"Apple sucks")
+  
+
