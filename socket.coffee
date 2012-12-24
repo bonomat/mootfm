@@ -7,6 +7,7 @@ class exports.Server
     User = require './models/user'
 
     express = require 'express'
+    path = require 'path'
 
     @user = new User 'test@gmail.com', 'test@gmail.com', 'test'
     @userTmpList = [ @user ]
@@ -21,7 +22,16 @@ class exports.Server
     @app.use express.bodyParser()
     
     # browserify for concatenation of the client js
-    @app.use(require('browserify')(__dirname + '/assets/js/controler.coffee'))
+    bundle = require('browserify')
+      entry: path.resolve(__dirname,'./assets/js/controler.coffee')
+      watch: true
+      debug: true
+      
+    bundle.on 'syntaxError', (err) ->
+      console.error err
+      process.exit 1
+      
+    @app.use bundle
     
     @app.set('views', __dirname + '/views')
     @app.set('view engine', 'jade')
