@@ -1,8 +1,8 @@
 # require dependency
-view = require "./view.coffee"
+views = require "./views.coffee"
 models = require "./models.coffee"
 
-titleView = new view.TitleView
+titleView = new views.TitleView
   el: "#title"
   model: new models.Title  
     id: 1
@@ -26,7 +26,7 @@ pro1 = new models.Point
     picture_url: "./placeholder.gif"
   
 pro2 = new models.Point
-  id: 2
+  id: 3
   title: "Apple is walled garden"
   parent: 1
   votes: 13
@@ -37,7 +37,7 @@ pro2 = new models.Point
     picture_url: "./placeholder.gif"
     
 contra1 = new models.Point
-  id: 2
+  id: 4
   title: "Apple has best selling iphone"
   parent: 1
   votes: 13
@@ -48,7 +48,15 @@ contra1 = new models.Point
     picture_url: "./placeholder.gif"
       
 
-#pro = new models.Side [pro1 pro2]
-#contra = new models.Side [contra1]
+pro_side = new models.Side [pro1, pro2]
+contra_side = new models.Side [contra1]
 
+sideView = new views.SideView
+  collection : pro_side
+  el : "#left-side"
+  
+sideView = new views.SideView
+  collection : contra_side
+  el : "#right-side"
+  
 console.log "Controler Loaded"
