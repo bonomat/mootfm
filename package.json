@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "async": "0.1.x",
-    "browserify":"*",
+    "browserify":"1.16.x",
     "coffee-script": "1.3.x",
     "connect-assets" : "2.2.x",
     "everyauth": "0.2.x",
