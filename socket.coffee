@@ -213,6 +213,19 @@ class exports.Server
     
     
     @io.sockets.on 'connection', (socket) =>
+      console.log "socket user",socket.handshake.user
+      socket.on 'statement', (statement_json) ->
+        console.log "Socket IO: new statement", statement_json
+        Statement.create statement_json, (err,stmt) ->
+          if err
+            console.log "Error occured", err
+            return
+          stmt.get_representation 0, (err, representation) ->
+            if err
+              console.log "Error occured", err
+              return
+            socket.emit "confirm", representation
+            
       count++
       console.log 'user connected ' + count
       socket.emit 'count', { number: count }

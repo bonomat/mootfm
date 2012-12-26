@@ -49,15 +49,15 @@ contra1 = new models.Point
 
 
 pro_side = new models.Side [pro1]
-#contra_side = new models.Side [contra1]
+contra_side = new models.Side [contra1]
 
 sideView = new views.SideView
   collection : pro_side
   el : "#left-side"
 
-#sideView = new views.SideView
-#  collection : contra_side
-#  el : "#right-side"
+sideView = new views.SideView
+  collection : contra_side
+  el : "#right-side"
 
 
 pro_side.add pro2
@@ -65,8 +65,17 @@ pro_side.add pro2
 pro2.set(votes:99)
 
 io = require('socket.io-client')
-socket = io.connect()
-socket.on 'connection', (data) -> 
-  console.log(data)
-  socket.emit('my other event', { my: 'data' })
+url = "http://localhost:8081"
+options =
+  transports: ['websockets']
+
+testState=
+  title:"Apple sucks"
+
+client1 = io.connect(url, options)
+client1.emit "statement",testState
+client1.on "confirm", (state) ->
+  console.log "received",state
+client1.on "error", (error) ->
+  console.log "received an error",error
 
