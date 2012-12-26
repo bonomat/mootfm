@@ -12,6 +12,9 @@ class exports.Server
     @user = new User 'test@gmail.com', 'test@gmail.com', 'test'
     @userTmpList = [ @user ]
 
+    MemoryStore = express.session.MemoryStore
+    @sessionStore = new MemoryStore()
+
     @conf = require './lib/conf'
     Security = require('./lib/security').Security
     @app = express()
@@ -39,8 +42,8 @@ class exports.Server
     @app.use(express.methodOverride())
     @app.use(require('stylus').middleware({ src: __dirname + '/public' }))
     @app.use(express.static(__dirname + '/public'))
-    @app.use(express.cookieParser())
-    @app.use(express.session { secret :'test'})
+    @app.use(express.cookieParser('test'))
+    @app.use(express.session { secret :'test', store: @sessionStore, key: 'sessionID'})
 
     #development
     @app.use(express.errorHandler({
@@ -161,6 +164,54 @@ class exports.Server
 # Socket IO
     @io = require('socket.io').listen @http_server
     count = 0
+    @io.set "authorization", (data, accept) =>
+      
+      # NOTE: To detect which session this socket is associated with,
+      #   *       we need to parse the cookies. 
+      
+      return accept("Session cookie required.", false)  unless data.headers.cookie
+      
+      # XXX: Here be hacks! Both of these methods are part of Connect's
+      #   *      private API, meaning there's no guarantee they won't change
+      #   *      even on minor revision changes. Be careful (but still
+      #   *      use this code!) 
+      
+      # NOTE: First parse the cookies into a half-formed object. 
+
+
+      connect = require('connect')
+      cookie = require('cookie')
+      #    console.log "data cookies jason" , data.headers.cookie
+      #    data.cookie = connect.utils.parseJSONCookies(data.headers.cookie)
+      #   console.log "data cookies jason" , data.cookie
+      
+      # NOTE: Next, verify the signature of the session cookie. 
+      cookie_tmp = cookie.parse(data.headers.cookie)
+      console.log "cookie_parsed", cookie_tmp
+      data.cookie = connect.utils.parseSignedCookies(cookie_tmp, 'test')
+      
+      #console.log "data cookies", data.cookie
+      # NOTE: save ourselves a copy of the sessionID. 
+      data.sessionID = data.cookie["sessionID"]
+      
+      # NOTE: get the associated session for this ID. If it doesn't exist,
+      #   *       then bail. 
+      
+      sessionID_var = cookie_tmp.sessionID
+      console.log 'session ID as String', cookie_tmp.sessionID
+      console.log 'sessionStore', @sessionStore
+      console.log 'sessionStore with sessionID', @sessionStore.sessionID_var
+      console.log 'sessionID', data.sessionID
+      @sessionStore.get data.sessionID, (err, session) ->
+        if err
+          return accept("Error in session store.", false)
+        else return accept("Session not found.", false)  unless session
+        
+        # success! we're authenticated with a known session.
+        data.session = session
+        accept null, true    
+    
+    
     @io.sockets.on 'connection', (socket) =>
       count++
       console.log 'user connected ' + count

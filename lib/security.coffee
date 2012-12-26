@@ -58,7 +58,7 @@ class exports.Security
       app.get "/auth/twitter", passport.authenticate("twitter"), (req, res) ->  # this function will never be called, it is just needed for passportjs
 
       app.get @conf.google.callbackURL, passport.authenticate("google", failureRedirect: "/fail"), (req, res) ->
-        res.redirect "/"
+        res.redirect "/statement2"
 
       app.get @conf.facebook.callbackURL, passport.authenticate("facebook", failureRedirect: "/fail"), (req, res) ->
         res.redirect "/"
