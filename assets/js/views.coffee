@@ -1,3 +1,5 @@
+Backbone = require('backbone')
+
 module.exports.TitleView = Backbone.View.extend
   initialize: ->
     @render()
