@@ -5,6 +5,8 @@ class exports.Server
   constructor: (@port) ->
 
     User = require './models/user'
+    flash = require 'connect-flash'
+
 
     express = require 'express'
     path = require 'path'
@@ -44,6 +46,7 @@ class exports.Server
     @app.use(express.static(__dirname + '/public'))
     @app.use(express.cookieParser('test'))
     @app.use(express.session { secret :'test', store: @sessionStore, key: 'sessionID'})
+    @app.use(flash())
 
     #development
     @app.use(express.errorHandler({
