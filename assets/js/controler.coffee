@@ -63,3 +63,10 @@ sideView = new views.SideView
 pro_side.add pro2
 
 pro2.set(votes:99)
+
+io = require('socket.io-client')
+socket = io.connect()
+socket.on 'connection', (data) -> 
+  console.log(data)
+  socket.emit('my other event', { my: 'data' })
+
