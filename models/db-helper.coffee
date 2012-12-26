@@ -33,4 +33,14 @@ module.exports = class DatabaseHelper
       callback null, ids
 
   delete_all_nodes: (callback) ->
-    @delete_node_by_id "*",callback
+    query = """
+      START n=node(*)
+      MATCH n-[r?]-()
+      DELETE n, r;
+    """
+    console.log "delete all nodes starting"
+    @db.query query, (err,results) ->
+      console.log "query executed"
+      return callback err if err
+      console.log "delete results", results
+      callback null
