@@ -14,25 +14,25 @@ class exports.Server
 
     @conf = require './lib/conf'
     Security = require('./lib/security').Security
-    @app = express.createServer()
+    @app = express()
 
     # convert existing coffeescript, styl, and less resources to js and css for the browser
     @app.use require('connect-assets')()
-    
+
     @app.use express.bodyParser()
-    
+
     # browserify for concatenation of the client js
     bundle = require('browserify')
       entry: path.resolve(__dirname,'./assets/js/controler.coffee')
       watch: true
       debug: true
-      
+
     bundle.on 'syntaxError', (err) ->
       console.error err
       process.exit 1
-      
+
     @app.use bundle
-    
+
     @app.set('views', __dirname + '/views')
     @app.set('view engine', 'jade')
     @app.use(express.bodyParser())
@@ -58,7 +58,7 @@ class exports.Server
     Statement = require './models/statement'
 
     console.log 'Server starting'
-    @app.listen @port
+    @http_server=@app.listen @port
     console.log 'Server listening on port ' + @port
 
     @app.get '/', (req, res) ->
@@ -159,7 +159,8 @@ class exports.Server
 
 
 # Socket IO
-    @io = require('socket.io').listen @app
+    console.log "listen param:",@http_server
+    @io = require('socket.io').listen @http_server
     count = 0
     @io.sockets.on 'connection', (socket) =>
       count++
