@@ -14,6 +14,7 @@
     "browserify":"1.16.x",
     "coffee-script": "1.4.x",
     "connect-assets" : "2.3.x",
+    "connect-flash" : "0.1.x",
     "everyauth": "0.3.x",
     "express": "3.0.x",
     "jade": "0.27.x",
