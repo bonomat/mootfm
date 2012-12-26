@@ -26,6 +26,7 @@
     "passport-facebook": "0.1.x",
     "passport-twitter": "0.1.x",
     "socket.io": "0.9.x",
+    "socket.io-client": "0.9.x",
     "stylus": "0.31.x"
   },
  "devDependencies": {
