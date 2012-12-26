@@ -159,7 +159,6 @@ class exports.Server
 
 
 # Socket IO
-    console.log "listen param:",@http_server
     @io = require('socket.io').listen @http_server
     count = 0
     @io.sockets.on 'connection', (socket) =>
