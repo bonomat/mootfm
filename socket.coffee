@@ -77,8 +77,11 @@ class exports.Server
     @app.get '/register', (req, res) ->
       res.render('register', {userData: {}, message: req.flash('error')})
 
+    @app.get '/loggedin', (req, res) ->
+      res.render('loggedin', {userData: {}, message: req.flash('error')})
+
     @app.get '/logout', (req, res) ->
-      #TODO: rethink if it is possible over socketID -> without redirect
+      #TODO: rethink if it is possible over socketID -> without
       req.logOut()
       backURL=req.header('Referer') || '/'
       res.redirect(backURL);

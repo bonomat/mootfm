@@ -79,3 +79,19 @@ client1.on "confirm", (state) ->
 client1.on "error", (error) ->
   console.log "received an error",error
 
+
+
+
+#### button logic
+
+openWindow = (url) ->
+  console.log "I was called", url
+  win = window.open(url, 'login window', 'height=200','width=200','modal=yes','alwaysRaised=yes')
+
+$("#google-login-btn").click ->
+  openWindow('/auth/google')
+$("#twitter-login-btn").click ->
+  openWindow('/auth/twitter')
+$("#fb-login-btn").click ->
+  openWindow('/auth/facebook')
+
