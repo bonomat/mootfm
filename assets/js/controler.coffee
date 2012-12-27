@@ -72,19 +72,25 @@ options =
 testState=
   title:"Apple sucks"
 
-client1 = io.connect(url, options)
-client1.emit "statement",testState
-client1.on "confirm", (state) ->
-  console.log "received",state
-client1.on "error", (error) ->
-  console.log "received an error",error
+client1 = {}
+connect_client_io = () ->
+  console.log "creating connection for socket io"
+  client1 = io.connect(url, options)
+  console.log client1
+  client1.emit "statement",testState
+  client1.on "confirm", (state) ->
+    console.log "received",state
+  client1.on "error", (error) ->
+    console.log "received an error",error
 
 
 #### button logic
 
 openWindow = (url) ->
   created_window = window.open(url, 'login window', 'height=200','width=200','modal=yes','alwaysRaised=yes')
-  created_window.onunload=()->{'window unloaded'};
+  $(created_window).unload ->
+    connect_client_io()
+
   client1.emit "statement",testState
 PopupUnload = (wnd) ->
   setTimeout (-> # setTimeout is for IE
