@@ -63,7 +63,7 @@ class exports.Security
         User.get_by_username username, (err, user) ->
           done(err, user)
 
-      func = passport.authenticate('local', { successRedirect: '/',  failureRedirect: '/login', failureFlash: true })
+      func = passport.authenticate('local', { successRedirect: '/success',  failureRedirect: '/login', failureFlash: true })
       app.post '/login', (err, data) ->
         console.log "receiving data"
         func err, data
