@@ -52,34 +52,18 @@ login = (callback)->
       url: url + res.headers.location
     , (err, res, body) ->
       res.body.search("test@user.at").should.not.be.equal -1
-      console.log "cookie",res.request.headers.cookie
-      console.log "logged in"
-      options.query=
-        res.request.headers.cookie
+      
+      options.query=res.request.headers.cookie
       callback()
 
 describe "Socket IO - Create new Statement", ->
   beforeEach (done) ->
     require('../server').start (err)->
-      create_user( ->
+      create_user ->
         login done
-      )
 
   it "should be successful.", (done) ->
-    console.log "starting"
-    #io.set "authorization", (data, accept) =>
-    #  console.log "authorization called"
-
     client1 = io.connect(url, options)
-    console.log "connected"
-    #io.on 'connect', ->
-    #  console.info 'successfully established a working connection \o/'
-
-    #client1.addEvent "connect", ->
-    #  # Send PHP session ID, which will be used to authenticate
-    #  sessid = readCookie("sessionID");
-    #  this.send("{'action':'authenticate','sessionid':'"+sessid+"'}");
-
     client1.emit "statement",testState
     client1.on "confirm", (state) ->
       console.log "received",state
