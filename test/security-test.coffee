@@ -10,14 +10,14 @@ DatabaseHelper = require "../models/db-helper"
 logfile = require('fs').createWriteStream 'extravagant-zombie.log'
 
 url = "http://localhost:8081"
-
+user_data=
+  name: "Test User"
+  email: "test@user.at"
+  password: "password"
+  username: "test@user.at"
+  
 describe "Login Test", ->
   beforeEach (done) ->
-    user_data=
-      name: "Test User"
-      email: "test@user.at"
-      password: "password"
-      username: "test@user.at"
     User.get_by_username "test@user.at" , (err, user) ->
       if (err)
         User.create user_data, (err, user)->
@@ -30,8 +30,8 @@ describe "Login Test", ->
       url: url + "/login"
       followRedirect:false
       form: 
-        username: 'test@user.at'
-        password: 'password'
+        username: user_data.email
+        password: user_data.password
     , (err, res, body) ->
       return done err if err
       res.headers.location.should.be.equal "/success"
