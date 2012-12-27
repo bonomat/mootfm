@@ -23,8 +23,8 @@ describe "Login Test", ->
         User.create user_data, (err,user)->
           console.log "ignored err" if err
           console.log "user saved" if !err
-    require('../server').start done
-    
+          require('../server').start done
+      else require('../server').start done
    
   it "login with username and password.", (done) ->
     http
