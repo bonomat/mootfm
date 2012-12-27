@@ -8,8 +8,7 @@ html
     script(src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.rc.1/handlebars.min.js")
 
     //google analytics
-    script(type="text/javascript")
-  
+    script(type="text/javascript")  
       var _gaq = _gaq || [];
       _gaq.push(['_setAccount', 'UA-34239619-1']);
       _gaq.push(['_setDomainName', 'moot.fm']);
@@ -24,8 +23,27 @@ html
     // twitter bootstrap on a cdn
     != css('bootstrap.combined.min')
     != css('mootfm')
+
     block head
 
   body
+    - if (!user)
+      h2 Not Authenticated
+      #register
+        a(href='/register') Register
+      #password-login
+        a(href='/login', style='border: 0px') Login with Password
+      #google-login
+        input(type="submit", id="google-login-btn", value="GLogin")
+      #twitter-login
+        input(type="submit", id="twitter-login-btn", value="TLogin")
+      #fb-login
+        input(type="submit", id="fb-login-btn", value="FLogin")
+        
+    - else
+      h2 Welcome #{user.username}
+      h3
+        a(href='/logout') Logout
+
     #main
       block body

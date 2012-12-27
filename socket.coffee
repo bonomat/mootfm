@@ -77,9 +77,14 @@ class exports.Server
     @app.get '/register', (req, res) ->
       res.render('register', {userData: {}, message: req.flash('error')})
 
+    @app.get '/loggedin', (req, res) ->
+      res.render('loggedin', {userData: {}, message: req.flash('error')})
+
     @app.get '/logout', (req, res) ->
+      #TODO: rethink if it is possible over socketID -> without
       req.logOut()
-      res.redirect('/')
+      backURL=req.header('Referer') || '/'
+      res.redirect(backURL);
 
     @app.post '/register', (req, res) ->
       newUserAttributes =
@@ -98,7 +103,7 @@ class exports.Server
               res.redirect('/login')
 
     @app.get '/statement', (req, res) ->
-      res.render 'statement', {}
+      res.render('statement', {user: req.user, message: req.flash('error')})
 
 # REST API
     version = "v0"
@@ -164,7 +169,11 @@ class exports.Server
 
 # Socket IO
     @io = require('socket.io').listen @http_server
-    count = 0
+#### Phil's part
+    #@io
+    #  .of('/unauthorized')
+    #  .on('connection')
+
     @io.set "authorization", (data, accept) =>
       if data.headers.cookie
         cookie = @cookie.parse(data.headers.cookie)
@@ -185,6 +194,8 @@ class exports.Server
         if err
           return accept("Error in session store.", false)
         else return accept("Session not found.", false)  unless session
+        if (!session.passport.user)
+          return accept("User in session not found.", false)
         console.log 'loaded session user', session.passport.user
         # success! we're authenticated with a known session.
         data.session = session
