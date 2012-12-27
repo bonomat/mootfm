@@ -173,17 +173,14 @@ Statement::get_representation = (level, callback) ->
 
 # creates a json compatible representation of this statement
 Statement::get_all_points = (level, callback) ->
-  console.log "level", level
   representation=
     title:@title
     id:@id
   return callback null, [representation] if level <= 0
   @getArguments (err, argument_dict) =>
-    console.log "argument dic", argument_dict
     points=[representation]
     return callback(err) if err
     async.forEach ([side,stmt_arguments] for side, stmt_arguments of argument_dict), ([side,stmt_arguments],callback)=>
-      console.log "for each"
       async.map stmt_arguments, (argument,callback)=>
         argument.get_all_points level-1, (err, points)=>
           return callback(err) if err
@@ -192,14 +189,13 @@ Statement::get_all_points = (level, callback) ->
             for point in points
               point.vote= votes
               point.side= side
+              point.parent=@id
             callback null, points
       , (err, side_arguments) ->
         return callback(err) if err
-        console.log "old points", points
-        points.push.apply(points, side_arguments)
-        console.log "new points", points
+        for side in side_arguments
+          points.push.apply(points, side)
         callback null
     , (err) ->
-      console.log "final after async for each"
       return callback(err) if err
       callback null, points

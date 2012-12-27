@@ -47,7 +47,7 @@ login = (callback)->
       password: user_data.password
   , (err, res, body) ->
     return done err if err
-    res.headers.location.should.be.equal "/loggedin"
+    res.headers.location.should.be.equal "/loggedin", "wrong redirect, probably because of failed login"
     res.statusCode.should.be.equal 302
     http
       method: "GET"
@@ -55,7 +55,7 @@ login = (callback)->
     , (err, res, body) ->
       res.body.search(user_data.email).should.not.be.equal -1
 
-      options.query=res.request.headers.cookie
+      options.query= res.request.headers.cookie
       callback()
 
 describe "Socket IO", ->
@@ -111,3 +111,34 @@ describe "Socket IO", ->
           #state.user.should.have.property('picture_url')
           client1.disconnect()
           done()
+
+  it "vote should be successful.", (done) ->
+    ids= []
+    client1 = io.connect(url, options)
+    client1.emit "post",testState
+    client1.once "statement", (statements) ->
+      ids[0]=statements[0].id
+      testState2.parent= statements[0].id
+      client1.emit "post",testState2
+      client1.once "statement", (statements) ->
+        ids[1]=statements[0].id
+        client1.emit "get",ids[0]
+        client1.once "statement", (statements) ->
+          statements.should.be.an.instanceOf(Array)
+          statements.length.should.be.equal 2, "wrong number of statements found"
+          for stmt in statements
+            if stmt.id==ids[1]
+              point=stmt
+              stmt.side.should.be.equal testState2.side, "wrong side found for point"
+              stmt.vote.should.be.equal 0, "wrong number of votes for point"
+          client1.emit "vote",point,1
+          client1.once "statement", (statements) ->
+            statements.should.be.an.instanceOf(Array)
+            statements.length.should.be.equal 1, "wrong number of statements found"
+            statements[0].vote.should.be.equal 1, "wrong number of votes for point"
+            #state.should.have.property('user')
+            #state.user.should.have.property('id')
+            #state.user.should.have.property('name')
+            #state.user.should.have.property('picture_url')
+            client1.disconnect()
+            done()

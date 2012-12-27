@@ -175,6 +175,7 @@ class exports.Server
     #  .on('connection')
 
     @io.set "authorization", (data, accept) =>
+      console.log "authorization called"
       if data.headers.cookie
         cookie = @cookie.parse(data.headers.cookie)
       else
@@ -187,7 +188,6 @@ class exports.Server
       # NOTE: Next, verify the signature of the session cookie.
       data.cookie = @connect.utils.parseSignedCookies(cookie, 'test')
 
-      #console.log "data cookies", data.cookie
       # NOTE: save ourselves a copy of the sessionID.
       data.sessionID = data.cookie["sessionID"]
       @sessionStore.get data.sessionID, (err, session) ->
@@ -196,7 +196,6 @@ class exports.Server
         else return accept("Session not found.", false)  unless session
         if (!session.passport.user)
           return accept("User in session not found.", false)
-        console.log 'loaded session user', session.passport.user
         # success! we're authenticated with a known session.
         data.session = session
         data.user = session.passport.user
@@ -205,7 +204,14 @@ class exports.Server
 
     @io.sockets.on "connection", (socket) ->
       hs = socket.handshake
-      console.log "A socket with sessionID " + hs.sessionID + " connected."
+      console.log "establishing connection"
+      User.get_by_username hs.user, (err, user) =>
+        if err
+          console.log "Couldnt find user:", user 
+          return
+        else
+          socket.user= user
+          console.log "A socket with sessionID " + hs.sessionID + " connected."
 
       socket.on 'post', (statement_json) ->
         console.log "Socket IO: new statement", statement_json
@@ -225,7 +231,7 @@ class exports.Server
               else
                 callback null
             (callback) ->
-              stmt.get_all_points 1, (err, points) ->
+              stmt.get_all_points 0, (err, points) ->
                 if err
                   console.log "Error occured", err
                   return
@@ -250,6 +256,41 @@ class exports.Server
               console.log "Error occured", err
               return
             socket.emit "statement", points
+
+      socket.on 'vote', (stmt, amount) ->
+        if not stmt or not amount
+          console.log "Wrong parameters for vote!" 
+          return
+
+          #/statement/:id/side/:side/vote/:point'
+        console.log "post vote"
+        id = stmt.parent
+        point_id = stmt.id
+        side = stmt.side
+        vote =amount
+        console.log id, point_id,side, vote
+        if vote!=-1 and vote!=1
+          console.log "Wrong vote amount for vote!" 
+          return 
+        console.log "param are good"
+        async.map [id, point_id], (item,callback)->
+          Statement.get item, callback
+        , (err, [stmt, point]) ->
+          if err
+            console.log "ERROR:" ,err
+            return
+          socket.user.vote stmt, point, side, vote, (err,total_votes)->
+            if err
+              console.log "ERROR:" ,err
+              return
+            point.get_all_points 0, (err, points) ->
+              if err
+                console.log "Error occured", err
+                return
+              points[0].vote=total_votes
+              points[0].parent=stmt.id
+              socket.emit "statement", points
+
       socket.on "disconnect", ->
         console.log "A socket with sessionID " + hs.sessionID + " disconnected."
     callback()
