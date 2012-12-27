@@ -1,33 +1,37 @@
-.container-fluid
-  .row-fluid
-  .span12
-    #title
-  .row-fluid
-  .span6
-    h3 Pro
-    #left-side
-  .span6
-    h3 Contra
-    #right-side
+extends layout
+block head
 
-#templates(style='display:none')
-
-  #title_template(type="text/template")
-    .well
+block body
+  .container-fluid
+    .row-fluid
+    .span12
       #title
-        h2 {{title}}
+    .row-fluid
+    .span6
+      h3 Pro
+      #left-side
+    .span6
+      h3 Contra
+      #right-side
 
-  #point_template(type="text/template")
-    .well(rows=3)
-      .pull-right
-        h3
-          {{votes}}
-        ul
-          .unstyled
-            i.icon-thumbs-up
-          .unstyled
-            i.icon-thumbs-down
-      a(href='#/{{point_id}}') {{title}}
+  #templates(style='display:none')
+
+    #title_template(type="text/template")
+      .well
+        #title
+          h2 {{title}}
+
+    #point_template(type="text/template")
+      .well(rows=3)
+        .pull-right
+          h3
+            {{votes}}
+          ul
+            .unstyled
+              i.icon-thumbs-up
+            .unstyled
+              i.icon-thumbs-down
+        a(href='#/{{point_id}}') {{title}}
 
 
-script(src="/browserify.js")
+  script(src="/browserify.js")

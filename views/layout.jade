@@ -2,14 +2,15 @@
 html
   head
     title= typeof(title) !== 'undefined' ? title : "MootFM"
-
-    script(src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js")
-    script(src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.3.3/underscore-min.js")
-    script(src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0.beta6/handlebars.min.js")
+    script(src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.8.3/jquery.min.js")
+    script(src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.3/underscore-min.js")
+    script(src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/0.9.9/backbone-min.js")
+    script(src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.rc.1/handlebars.min.js")
 
     // twitter bootstrap on a cdn
     != css('bootstrap.combined.min')
     != css('mootfm')
+    block head
   body
     #main
-      != body
+      block body
