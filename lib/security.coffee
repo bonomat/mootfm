@@ -31,12 +31,14 @@ class exports.Security
       passport.use new LocalStrategy (username, password, done) ->
         process.nextTick ->
           User.get_by_username username , (err, user) ->
+            console.log "local strategy loaded" 
             if (err)
               return done(null, false, { message: 'Incorrect username or password!' })
             if (!user)
               return done(null, false, { message: 'Unknown user' })
             if (!user.password == password)
               return done(null, false, { message: 'Invalid password' })
+            console.log "local strategy done called"
             return done(null, user)
 
       passport.use new GoogleStrategy {clientID: @conf.google.clientId, clientSecret: @conf.google.clientSecret, callbackURL: @conf.google.callbackURL}, (accessToken, refreshToken, profile, done) ->
@@ -61,8 +63,13 @@ class exports.Security
         User.get_by_username username, (err, user) ->
           done(err, user)
 
-      app.post '/login',
-        passport.authenticate('local', { successRedirect: '/',  failureRedirect: '/login', failureFlash: true })
+      func = passport.authenticate('local', { successRedirect: '/',  failureRedirect: '/login', failureFlash: true })
+      app.post '/login', (err, data) ->
+        console.log "receiving data"
+        func err, data
+        console.log "where is the error"
+          
+        
 
       app.get "/auth/google", passport.authenticate("google", { scope: @conf.google.scope }), (req, res) ->  # this function will never be called, it is just needed for passportjs
 

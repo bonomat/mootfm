@@ -65,6 +65,7 @@ class exports.Server
     console.log 'Server listening on port ' + @port
 
     @app.get '/', (req, res) ->
+      console.log "redirect called "
       res.render('home', {user: req.user, message: req.flash('error')})
 
     @app.get '/login', (req, res) ->
