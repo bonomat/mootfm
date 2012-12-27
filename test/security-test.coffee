@@ -44,3 +44,6 @@ describe "Login Test", ->
       , (err, res, body) ->
         res.body.search("test@user.at").should.not.be.equal -1
         done()
+        
+        
+        
