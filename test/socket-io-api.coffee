@@ -62,7 +62,7 @@ describe "Socket IO", ->
       create_user ->
         login done
 
-  it "create should be successful.", (done) ->
+  it "post should be successful.", (done) ->
     client1 = io.connect(url, options)
     client1.emit "post",testState
     client1.on "statement", (state) ->
@@ -73,3 +73,16 @@ describe "Socket IO", ->
       #state.user.should.have.property('picture_url')
       client1.disconnect()
       done()
+  it "get should be successful.", (done) ->
+    client1 = io.connect(url, options)
+    client1.emit "post",testState
+    client1.on "statement", (state) ->
+      client1.emit "get",state.id
+      client1.on "statement", (state) ->
+        state.title.should.equal(testState.title,"should receive same statement title on create");
+        #state.should.have.property('user')
+        #state.user.should.have.property('id')
+        #state.user.should.have.property('name')
+        #state.user.should.have.property('picture_url')
+        client1.disconnect()
+        done()
