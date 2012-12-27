@@ -13,10 +13,7 @@ class exports.Server
 
     express = require 'express'
     path = require 'path'
-
-    @user = new User 'test@gmail.com', 'test@gmail.com', 'test'
-    @userTmpList = [ @user ]
-
+    
     MemoryStore = express.session.MemoryStore
     @sessionStore = new MemoryStore()
 
@@ -68,6 +65,10 @@ class exports.Server
     console.log 'Server listening on port ' + @port
 
     @app.get '/', (req, res) ->
+      console.log "redirect called "
+      res.render('home', {user: req.user, message: req.flash('error')})
+
+    @app.get '/success', (req, res) ->
       res.render('home', {user: req.user, message: req.flash('error')})
 
     @app.get '/login', (req, res) ->
@@ -101,7 +102,7 @@ class exports.Server
 
 # REST API
     version = "v0"
-    url_prefix='/' + version
+    url_prefix= '/' + version
     @app.get url_prefix + "/statement/:id", (req, res) ->
       console.log "get statement"
       Statement.get req.params.id, (err,stmt) ->
