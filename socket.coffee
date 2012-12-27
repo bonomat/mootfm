@@ -184,19 +184,16 @@ class exports.Server
       
       #console.log "data cookies", data.cookie
       # NOTE: save ourselves a copy of the sessionID. 
-      data.sessionID = data.cookie["sessionID"]
-      console.log 'sessionStore', @sessionStore
-      sessionID_var = data.sessionID
-      console.log 'sessionID', data.sessionID
-      
+      data.sessionID = data.cookie["sessionID"]     
           
       @sessionStore.get data.sessionID, (err, session) ->
         if err
           return accept("Error in session store.", false)
         else return accept("Session not found.", false)  unless session
-        console.log 'loaded session', session 
+        console.log 'loaded session user', session.passport.user 
         # success! we're authenticated with a known session.
         data.session = session
+        data.user = session.passport.user
         accept null, true    
     
     
@@ -204,10 +201,6 @@ class exports.Server
       hs = socket.handshake
       console.log "A socket with sessionID " + hs.sessionID + " connected."
       
-      # NOTE: At this point, you win. You can use hs.sessionID and
-      #   *       hs.session. 
-          
-      console.log "socket user",socket.handshake.user
       socket.on 'statement', (statement_json) ->
         console.log "Socket IO: new statement", statement_json
         Statement.create statement_json, (err,stmt) ->
