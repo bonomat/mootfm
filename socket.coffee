@@ -7,6 +7,9 @@ class exports.Server
     User = require './models/user'
     flash = require 'connect-flash'
 
+    @connect = require('connect')
+    @cookie = require('cookie')
+    
 
     express = require 'express'
     path = require 'path'
@@ -174,36 +177,16 @@ class exports.Server
       
       return accept("Session cookie required.", false)  unless data.headers.cookie
       
-      # XXX: Here be hacks! Both of these methods are part of Connect's
-      #   *      private API, meaning there's no guarantee they won't change
-      #   *      even on minor revision changes. Be careful (but still
-      #   *      use this code!) 
-      
-      # NOTE: First parse the cookies into a half-formed object. 
-
-
-      connect = require('connect')
-      cookie = require('cookie')
-      #    console.log "data cookies jason" , data.headers.cookie
-      #    data.cookie = connect.utils.parseJSONCookies(data.headers.cookie)
-      #   console.log "data cookies jason" , data.cookie
-      
       # NOTE: Next, verify the signature of the session cookie. 
-      cookie_tmp = cookie.parse(data.headers.cookie)
-      console.log "cookie_parsed", cookie_tmp
-      data.cookie = connect.utils.parseSignedCookies(cookie_tmp, 'test')
+      cookie_tmp = @cookie.parse(data.headers.cookie)
+    
+      data.cookie = @connect.utils.parseSignedCookies(cookie_tmp, 'test')
       
       #console.log "data cookies", data.cookie
       # NOTE: save ourselves a copy of the sessionID. 
       data.sessionID = data.cookie["sessionID"]
       
-      # NOTE: get the associated session for this ID. If it doesn't exist,
-      #   *       then bail. 
-      
-      sessionID_var = cookie_tmp.sessionID
-      console.log 'session ID as String', cookie_tmp.sessionID
-      console.log 'sessionStore', @sessionStore
-      console.log 'sessionStore with sessionID', @sessionStore.sessionID_var
+      sessionID_var = data.sessionID
       console.log 'sessionID', data.sessionID
       @sessionStore.get data.sessionID, (err, session) ->
         if err
@@ -215,7 +198,13 @@ class exports.Server
         accept null, true    
     
     
-    @io.sockets.on 'connection', (socket) =>
+    @io.sockets.on "connection", (socket) ->
+      hs = socket.handshake
+      console.log "A socket with sessionID " + hs.sessionID + " connected."
+      
+      # NOTE: At this point, you win. You can use hs.sessionID and
+      #   *       hs.session. 
+          
       console.log "socket user",socket.handshake.user
       socket.on 'statement', (statement_json) ->
         console.log "Socket IO: new statement", statement_json
@@ -229,15 +218,8 @@ class exports.Server
               return
             socket.emit "confirm", representation
             
-      count++
-      console.log 'user connected ' + count
-      socket.emit 'count', { number: count }
-      socket.broadcast.emit 'count', { number: count }
-
-      socket.on 'disconnect', () =>
-        count--
-        console.log 'user disconnected '
-        socket.broadcast.emit 'count', { number: count }
+      socket.on "disconnect", ->
+        console.log "A socket with sessionID " + hs.sessionID + " disconnected."
     callback()
 
   stop: (callback) ->
