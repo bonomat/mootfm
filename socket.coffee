@@ -196,7 +196,7 @@ class exports.Server
       hs = socket.handshake
       console.log "A socket with sessionID " + hs.sessionID + " connected."
 
-      socket.on 'statement', (statement_json) ->
+      socket.on 'post', (statement_json) ->
         console.log "Socket IO: new statement", statement_json
         Statement.create statement_json, (err,stmt) ->
           if err
@@ -206,7 +206,7 @@ class exports.Server
             if err
               console.log "Error occured", err
               return
-            socket.emit "confirm", representation
+            socket.emit "statement", representation
 
       socket.on "disconnect", ->
         console.log "A socket with sessionID " + hs.sessionID + " disconnected."

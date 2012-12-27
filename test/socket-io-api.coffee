@@ -52,21 +52,20 @@ login = (callback)->
       url: url + res.headers.location
     , (err, res, body) ->
       res.body.search("test@user.at").should.not.be.equal -1
-      
+
       options.query=res.request.headers.cookie
       callback()
 
-describe "Socket IO - Create new Statement", ->
+describe "Socket IO", ->
   beforeEach (done) ->
     require('../server').start (err)->
       create_user ->
         login done
 
-  it "should be successful.", (done) ->
+  it "create should be successful.", (done) ->
     client1 = io.connect(url, options)
-    client1.emit "statement",testState
-    client1.on "confirm", (state) ->
-      console.log "received",state
+    client1.emit "post",testState
+    client1.on "statement", (state) ->
       state.title.should.equal(testState.title,"should receive same statement title on create");
       #state.should.have.property('user')
       #state.user.should.have.property('id')
