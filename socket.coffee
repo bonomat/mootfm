@@ -78,8 +78,10 @@ class exports.Server
       res.render('register', {userData: {}, message: req.flash('error')})
 
     @app.get '/logout', (req, res) ->
+      #TODO: rethink if it is possible over socketID -> without redirect
       req.logOut()
-      res.redirect('/')
+      backURL=req.header('Referer') || '/'
+      res.redirect(backURL);
 
     @app.post '/register', (req, res) ->
       newUserAttributes =
@@ -98,7 +100,7 @@ class exports.Server
               res.redirect('/login')
 
     @app.get '/statement', (req, res) ->
-      res.render 'statement', {}
+      res.render('statement', {user: req.user, message: req.flash('error')})
 
 # REST API
     version = "v0"

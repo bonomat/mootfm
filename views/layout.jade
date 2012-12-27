@@ -24,8 +24,30 @@ html
     // twitter bootstrap on a cdn
     != css('bootstrap.combined.min')
     != css('mootfm')
+
     block head
 
   body
+    - if (!user)
+      h2 Not Authenticated
+      #register
+        a(href='/register') Register
+      #password-login
+        a(href='/login', style='border: 0px') Login with Password
+      #google-login
+        a(href='/auth/google', style='border: 0px')
+          img(style='border: 0px', src='https://www.google.com/favicon.ico')
+      #twitter-login
+        a(href='/auth/twitter', style='border: 0px')
+          img(style='border: 0px', src='https://si0.twimg.com/images/dev/buttons/sign-in-with-twitter-l.png')
+      #fb-login.fb_button(style='background-position: left -188px')
+        a.fb_button_medium(href='/auth/facebook')
+          span#fb_login_text.fb_button_text
+            Connect with Facebook
+    - else
+      h2 Welcome #{user.username}
+      h3
+        a(href='/logout') Logout
+
     #main
       block body
