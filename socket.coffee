@@ -9,7 +9,7 @@ class exports.Server
 
     @connect = require('connect')
     @cookie = require('cookie')
-    
+
 
     express = require 'express'
     path = require 'path'
@@ -26,8 +26,6 @@ class exports.Server
 
     # convert existing coffeescript, styl, and less resources to js and css for the browser
     @app.use require('connect-assets')()
-
-    @app.use express.bodyParser()
 
     # browserify for concatenation of the client js
     bundle = require('browserify')
@@ -57,7 +55,6 @@ class exports.Server
     }))
 
     #production
-    #@app.use(express.errorHandler())
     security = new Security
     security.init @app, (error, passport) =>
       @app.use(@app.router)
@@ -101,9 +98,6 @@ class exports.Server
 
     @app.get '/statement', (req, res) ->
       res.render 'statement', {}
-
-    @app.get '/statement2', (req, res) ->
-      res.render 'statement2', {}
 
 # REST API
     version = "v0"
@@ -171,36 +165,36 @@ class exports.Server
     @io = require('socket.io').listen @http_server
     count = 0
     @io.set "authorization", (data, accept) =>
-      
+
       # NOTE: To detect which session this socket is associated with,
-      #   *       we need to parse the cookies. 
-      
+      #   *       we need to parse the cookies.
+
       return accept("Session cookie required.", false)  unless data.headers.cookie
-      
-      # NOTE: Next, verify the signature of the session cookie. 
+
+      # NOTE: Next, verify the signature of the session cookie.
       cookie_tmp = @cookie.parse(data.headers.cookie)
-    
+
       data.cookie = @connect.utils.parseSignedCookies(cookie_tmp, 'test')
-      
+
       #console.log "data cookies", data.cookie
-      # NOTE: save ourselves a copy of the sessionID. 
-      data.sessionID = data.cookie["sessionID"]     
-          
+      # NOTE: save ourselves a copy of the sessionID.
+      data.sessionID = data.cookie["sessionID"]
+
       @sessionStore.get data.sessionID, (err, session) ->
         if err
           return accept("Error in session store.", false)
         else return accept("Session not found.", false)  unless session
-        console.log 'loaded session user', session.passport.user 
+        console.log 'loaded session user', session.passport.user
         # success! we're authenticated with a known session.
         data.session = session
         data.user = session.passport.user
-        accept null, true    
-    
-    
+        accept null, true
+
+
     @io.sockets.on "connection", (socket) ->
       hs = socket.handshake
       console.log "A socket with sessionID " + hs.sessionID + " connected."
-      
+
       socket.on 'statement', (statement_json) ->
         console.log "Socket IO: new statement", statement_json
         Statement.create statement_json, (err,stmt) ->
@@ -212,7 +206,7 @@ class exports.Server
               console.log "Error occured", err
               return
             socket.emit "confirm", representation
-            
+
       socket.on "disconnect", ->
         console.log "A socket with sessionID " + hs.sessionID + " disconnected."
     callback()

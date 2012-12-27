@@ -1,40 +1,37 @@
-.container-fluid
+extends layout
+block head
 
-#statement_container
-
-#templates(style='display:none')
-
-  #point_template(type="text/template")
-    .well(rows=3)
-      .pull-right
-        h3
-          {{vote}}
-        ul
-          .unstyled
-            i.icon-thumbs-up
-          .unstyled
-            i.icon-thumbs-down
-      a(href='#/{{point_id}}') {{title}}
-
-  #title_template(type="text/template")
-    .well
+block body
+  .container-fluid
+    .row-fluid
+    .span12
       #title
-        h2 {{title}}
-  #statement_template(type="text/template")
-    .container-fluid
-      .row-fluid
-      .span12
-        #title
-      .row-fluid
-      .span6
-        h3 Pro
-        #left-side
-          #points
-          textarea.field.span6#new_pro_point_template.input-xlarge(type="text", rows=3)
-      .span6
-        h3 Contra
-        #right-side
-          #points
-          textarea.field.span6#new_contra_point_template.input-xlarge(type="text", rows=3)
+    .row-fluid
+    .span6
+      h3 Pro
+      #left-side
+    .span6
+      h3 Contra
+      #right-side
 
-!= js('statement')
+  #templates(style='display:none')
+
+    #title_template(type="text/template")
+      .well
+        #title
+          h2 {{title}}
+
+    #point_template(type="text/template")
+      .well(rows=3)
+        .pull-right
+          h3
+            {{votes}}
+          ul
+            .unstyled
+              i.icon-thumbs-up
+            .unstyled
+              i.icon-thumbs-down
+        a(href='#/{{point_id}}') {{title}}
+
+
+  script(src="/browserify.js")

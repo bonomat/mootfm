@@ -1,5 +1,5 @@
 class exports.Security
-  
+
     init: (app, cb) ->
 
       User = require "../models/user"
@@ -20,10 +20,10 @@ class exports.Security
           User.get_by_username username , (err, user) ->
             if (err)
               return done(null, false, { message: 'Incorrect username or password!' })
-            if (!user) 
+            if (!user)
               return done(null, false, { message: 'Unknown user' })
-            if (!user.password == password) 
-              return done(null, false, { message: 'Invalid password' })  
+            if (!user.password == password)
+              return done(null, false, { message: 'Invalid password' })
             return done(null, user)
 
       passport.use new GoogleStrategy {clientID: @conf.google.clientId, clientSecret: @conf.google.clientSecret, callbackURL: @conf.google.callbackURL}, (accessToken, refreshToken, profile, done) ->
@@ -58,7 +58,7 @@ class exports.Security
       app.get "/auth/twitter", passport.authenticate("twitter"), (req, res) ->  # this function will never be called, it is just needed for passportjs
 
       app.get @conf.google.callbackURL, passport.authenticate("google", failureRedirect: "/fail"), (req, res) ->
-        res.redirect "/statement2"
+        res.redirect "/statement"
 
       app.get @conf.facebook.callbackURL, passport.authenticate("facebook", failureRedirect: "/fail"), (req, res) ->
         res.redirect "/"
@@ -67,4 +67,4 @@ class exports.Security
         res.redirect "/"
 
       cb null, passport
-  
+
