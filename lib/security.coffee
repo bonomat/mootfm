@@ -37,7 +37,7 @@ class exports.Security
               return done(null, false, { message: 'Unknown user' })
             if (user.password != password)
               return done(null, false, { message: 'Invalid password' })
-            return done(null, user_data)
+            return done(null, user)
 
       passport.use new GoogleStrategy {clientID: @conf.google.clientId, clientSecret: @conf.google.clientSecret, callbackURL: @conf.google.callbackURL}, (accessToken, refreshToken, profile, done) ->
         process.nextTick () ->
