@@ -68,6 +68,9 @@ class exports.Server
       console.log "redirect called "
       res.render('home', {user: req.user, message: req.flash('error')})
 
+    @app.get '/success', (req, res) ->
+      res.render('home', {user: req.user, message: req.flash('error')})
+
     @app.get '/login', (req, res) ->
       res.render('login', {user: req.user, message: req.flash('error')})
 
@@ -99,7 +102,7 @@ class exports.Server
 
 # REST API
     version = "v0"
-    url_prefix='/' + version
+    url_prefix= '/' + version
     @app.get url_prefix + "/statement/:id", (req, res) ->
       console.log "get statement"
       Statement.get req.params.id, (err,stmt) ->
