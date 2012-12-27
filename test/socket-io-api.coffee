@@ -22,6 +22,8 @@ testState=
 
 testState2=
   title:"Apple lags behind"
+  side: "pro"
+
 
 url = "http://localhost:8081"
 options =
@@ -65,8 +67,8 @@ describe "Socket IO", ->
   it "post should be successful.", (done) ->
     client1 = io.connect(url, options)
     client1.emit "post",testState
-    client1.on "statement", (state) ->
-      state.title.should.equal(testState.title,"should receive same statement title on create");
+    client1.once "statement", (statements) ->
+      statements[0].title.should.equal(testState.title,"should receive same statement title on create");
       #state.should.have.property('user')
       #state.user.should.have.property('id')
       #state.user.should.have.property('name')
@@ -76,13 +78,40 @@ describe "Socket IO", ->
   it "get should be successful.", (done) ->
     client1 = io.connect(url, options)
     client1.emit "post",testState
-    client1.on "statement", (state) ->
-      client1.emit "get",state.id
-      client1.on "statement", (state) ->
-        state.title.should.equal(testState.title,"should receive same statement title on create");
+    client1.once "statement", (statements) ->
+      client1.emit "get",statements[0].id
+      client1.once "statement", (statements) ->
+        statements.should.be.an.instanceOf(Array)
+        statements.length.should.be.equal 1, "wrong number of statements found"
+        statements[0].title.should.equal testState.title,"should receive same statement title on create"
         #state.should.have.property('user')
         #state.user.should.have.property('id')
         #state.user.should.have.property('name')
         #state.user.should.have.property('picture_url')
         client1.disconnect()
         done()
+  it "argue should be successful.", (done) ->
+    ids= []
+    client1 = io.connect(url, options)
+    client1.emit "post",testState
+    client1.once "statement", (statements) ->
+      console.log "0"
+      ids[0]=statements[0].id
+      testState2.parent= statements[0].id
+      console.log "01"
+      client1.emit "post",testState2
+      client1.once "statement", (statements) ->
+        console.log "1"
+        ids[1]=statements[0].id
+        client1.emit "get",ids[0]
+        client1.once "statement", (statements) ->
+          console.log "2"
+          statements.should.be.an.instanceOf(Array)
+          statements.length.should.be.equal 2, "wrong number of statements found"
+        
+          #state.should.have.property('user')
+          #state.user.should.have.property('id')
+          #state.user.should.have.property('name')
+          #state.user.should.have.property('picture_url')
+          client1.disconnect()
+          done()

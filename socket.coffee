@@ -206,7 +206,7 @@ class exports.Server
             if err
               console.log "Error occured", err
               return
-            socket.emit "statement", representation
+            socket.emit "statement", [representation]
       socket.on 'get', (id) ->
         if not id
           console.log "No id specified for GET on Socket IO!" 
@@ -217,11 +217,17 @@ class exports.Server
           if err
             console.log "Error occured", err
             return
-          stmt.get_representation 0, (err, representation) ->
+          console.log "returning stmt",stmt
+          stmt.getArguments (err, points)->
+            console.log "arguments", points
             if err
               console.log "Error occured", err
               return
-            socket.emit "statement", representation
+            stmt.get_representation 0, (err, representation) ->
+              if err
+                console.log "Error occured", err
+                return
+              socket.emit "statement", [representation]
       socket.on "disconnect", ->
         console.log "A socket with sessionID " + hs.sessionID + " disconnected."
     callback()
