@@ -15,6 +15,19 @@ class exports.Security
       FacebookStrategy = require("passport-facebook").Strategy
       TwitterStrategy = require('passport-twitter').Strategy
 
+      #### TEST USER ####
+      user_data=
+        name: "Test User"
+        email: "test@user.at"
+        password: "password"
+        username: "test@user.at"
+      User.get_by_username "test@user.at" , (err, user) ->
+        if (err)
+          User.create user_data, (err,user)->
+            console.log "ignored err" if err
+            console.log "user saved" if !err
+
+
       passport.use new LocalStrategy (username, password, done) ->
         process.nextTick ->
           User.get_by_username username , (err, user) ->

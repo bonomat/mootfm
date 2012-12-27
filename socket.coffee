@@ -13,10 +13,7 @@ class exports.Server
 
     express = require 'express'
     path = require 'path'
-
-    @user = new User 'test@gmail.com', 'test@gmail.com', 'test'
-    @userTmpList = [ @user ]
-
+    
     MemoryStore = express.session.MemoryStore
     @sessionStore = new MemoryStore()
 
