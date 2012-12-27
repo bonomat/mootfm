@@ -95,20 +95,16 @@ describe "Socket IO", ->
     client1 = io.connect(url, options)
     client1.emit "post",testState
     client1.once "statement", (statements) ->
-      console.log "0"
       ids[0]=statements[0].id
       testState2.parent= statements[0].id
-      console.log "01"
       client1.emit "post",testState2
       client1.once "statement", (statements) ->
-        console.log "1"
         ids[1]=statements[0].id
         client1.emit "get",ids[0]
         client1.once "statement", (statements) ->
-          console.log "2"
           statements.should.be.an.instanceOf(Array)
           statements.length.should.be.equal 2, "wrong number of statements found"
-        
+          
           #state.should.have.property('user')
           #state.user.should.have.property('id')
           #state.user.should.have.property('name')

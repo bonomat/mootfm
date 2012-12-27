@@ -202,32 +202,43 @@ class exports.Server
           if err
             console.log "Error occured", err
             return
-          stmt.get_representation 0, (err, representation) ->
+          async.waterfall [
+            (callback)->
+              if statement_json.parent && statement_json.side
+                Statement.get statement_json.parent, (err,parent) ->
+                  if err
+                    console.log "Error occured", err
+                    return
+                  stmt.argue parent, statement_json.side, (err)->
+                    callback err
+              else
+                callback null
+            (callback) ->
+              stmt.get_all_points 1, (err, points) ->
+                if err
+                  console.log "Error occured", err
+                  return
+                socket.emit "statement", points
+                callback()
+          ], (err) ->
             if err
               console.log "Error occured", err
               return
-            socket.emit "statement", [representation]
+
       socket.on 'get', (id) ->
         if not id
           console.log "No id specified for GET on Socket IO!" 
           return
 
-        console.log "Socket IO: get statement", id
         Statement.get id, (err,stmt) ->
           if err
             console.log "Error occured", err
             return
-          console.log "returning stmt",stmt
-          stmt.getArguments (err, points)->
-            console.log "arguments", points
+          stmt.get_all_points 1, (err, points) ->
             if err
               console.log "Error occured", err
               return
-            stmt.get_representation 0, (err, representation) ->
-              if err
-                console.log "Error occured", err
-                return
-              socket.emit "statement", [representation]
+            socket.emit "statement", points
       socket.on "disconnect", ->
         console.log "A socket with sessionID " + hs.sessionID + " disconnected."
     callback()
