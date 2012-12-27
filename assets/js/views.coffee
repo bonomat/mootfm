@@ -75,3 +75,19 @@ module.exports.SideView = Backbone.View.extend(
     $(viewToRemove.el).remove() if @_rendered
 )
 
+module.exports.UserpanelView = UserpanelView = Backbone.View.extend
+  initialize: ->
+    @render()
+    @model.on "change", =>
+      if (@model.hasChanged("loggedin"))
+        @render()
+
+  render: ->
+    if !@model.loggedin
+      template = Handlebars.compile($("#not_loggedin_template").html())
+    else
+      template = Handlebars.compile($("#loggedin_template").html())
+
+    # Load the compiled HTML into the Backbone "el"
+    $(@el).html template @model.toJSON()
+    @

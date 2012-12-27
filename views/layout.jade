@@ -27,23 +27,7 @@ html
     block head
 
   body
-    - if (!user)
-      h2 Not Authenticated
-      #register
-        a(href='/register') Register
-      #password-login
-        a(href='/login', style='border: 0px') Login with Password
-      #google-login
-        input(type="submit", id="google-login-btn", value="GLogin")
-      #twitter-login
-        input(type="submit", id="twitter-login-btn", value="TLogin")
-      #fb-login
-        input(type="submit", id="fb-login-btn", value="FLogin")
-        
-    - else
-      h2 Welcome #{user.username}
-      h3
-        a(href='/logout') Logout
+    include includes/userpanel
 
     #main
       block body

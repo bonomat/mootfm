@@ -32,3 +32,8 @@ module.exports.Side = Backbone.Collection.extend
     @bind "change", ->
       @sort()
 
+module.exports.User = User = Backbone.Model.extend(
+  defaults:
+    loggedin: false
+    username: ""
+)

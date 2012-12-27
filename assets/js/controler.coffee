@@ -74,7 +74,6 @@ testState=
 
 client1 = {}
 connect_client_io = () ->
-  console.log "creating connection for socket io"
   client1 = io.connect(url, options)
   console.log client1
   client1.emit "statement",testState
@@ -83,6 +82,16 @@ connect_client_io = () ->
   client1.on "error", (error) ->
     console.log "received an error",error
 
+user = new models.User
+
+userpanelView = new views.UserpanelView
+  el: "#userpanel"
+  model: user
+
+update_user_window = () ->
+  console.log 'hey'
+  user.set(loggedin:true)
+
 
 #### button logic
 
@@ -90,6 +99,7 @@ openWindow = (url) ->
   created_window = window.open(url, 'login window', 'height=200','width=200','modal=yes','alwaysRaised=yes')
   $(created_window).unload ->
     connect_client_io()
+    update_user_window()
 
   client1.emit "statement",testState
 PopupUnload = (wnd) ->
