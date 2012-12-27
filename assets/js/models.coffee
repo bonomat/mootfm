@@ -1,5 +1,3 @@
-Backbone = require('backbone')
-
 module.exports.Title = Backbone.Model.extend(
   defaults:
     id: 0
