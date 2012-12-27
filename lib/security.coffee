@@ -35,7 +35,7 @@ class exports.Security
               return done(null, false, { message: 'Incorrect username or password!' })
             if (!user)
               return done(null, false, { message: 'Unknown user' })
-            if ((user.password != password))
+            if (user.password != password)
               return done(null, false, { message: 'Invalid password' })
             return done(null, user_data)
 
@@ -63,8 +63,6 @@ class exports.Security
 
       app.post '/login', passport.authenticate('local', { successRedirect: '/success',  failureRedirect: '/login', failureFlash: true })
           
-        
-
       app.get "/auth/google", passport.authenticate("google", { scope: @conf.google.scope }), (req, res) ->  # this function will never be called, it is just needed for passportjs
 
       app.get '/auth/facebook', passport.authenticate('facebook'), (req, res) ->  # this function will never be called, it is just needed for passportjs
