@@ -227,14 +227,19 @@ class exports.Server
                     console.log "Error occured", err
                     return
                   stmt.argue parent, statement_json.side, (err)->
-                    callback err
+                    callback err, parent
               else
-                callback null
-            (callback) ->
+                callback null, null
+            (parent, callback) ->
+              console.log "parent received",parent
               stmt.get_all_points 0, (err, points) ->
                 if err
                   console.log "Error occured", err
                   return
+                if parent
+                  points.parent=parent.id
+                  points.vote=0
+                  points.side=statement_json.side
                 socket.emit "statement", points
                 callback()
           ], (err) ->

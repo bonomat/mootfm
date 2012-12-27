@@ -99,6 +99,9 @@ describe "Socket IO", ->
       testState2.parent= statements[0].id
       client1.emit "post",testState2
       client1.once "statement", (statements) ->
+        statements[0].parent.should.ne.equal testState2.parent, "wrong parent found"
+        statements[0].side.should.ne.equal testState2.side, "wrong side found"
+        statements[0].vote.should.ne.equal 0, "wrong vote found"
         ids[1]=statements[0].id
         client1.emit "get",ids[0]
         client1.once "statement", (statements) ->
