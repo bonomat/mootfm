@@ -5,21 +5,39 @@ class exports.Server
   constructor: (@port) ->
 
     User = require './models/user'
+    flash = require 'connect-flash'
+
+    @connect = require('connect')
+    @cookie = require('cookie')
+
 
     express = require 'express'
+    path = require 'path'
 
     @user = new User 'test@gmail.com', 'test@gmail.com', 'test'
     @userTmpList = [ @user ]
 
+    MemoryStore = express.session.MemoryStore
+    @sessionStore = new MemoryStore()
+
     @conf = require './lib/conf'
     Security = require('./lib/security').Security
-    @app = express.createServer()
+    @app = express()
 
     # convert existing coffeescript, styl, and less resources to js and css for the browser
     @app.use require('connect-assets')()
 
-    @app.use express.bodyParser()
+    # browserify for concatenation of the client js
+    bundle = require('browserify')
+      entry: path.resolve(__dirname,'./assets/js/controler.coffee')
+      watch: true
+      debug: true
 
+    bundle.on 'syntaxError', (err) ->
+      console.error err
+      process.exit 1
+
+    @app.use bundle
 
     @app.set('views', __dirname + '/views')
     @app.set('view engine', 'jade')
@@ -27,8 +45,9 @@ class exports.Server
     @app.use(express.methodOverride())
     @app.use(require('stylus').middleware({ src: __dirname + '/public' }))
     @app.use(express.static(__dirname + '/public'))
-    @app.use(express.cookieParser())
-    @app.use(express.session { secret :'test'})
+    @app.use(express.cookieParser('test'))
+    @app.use(express.session { secret :'test', store: @sessionStore, key: 'sessionID'})
+    @app.use(flash())
 
     #development
     @app.use(express.errorHandler({
@@ -36,7 +55,6 @@ class exports.Server
     }))
 
     #production
-    #@app.use(express.errorHandler())
     security = new Security
     security.init @app, (error, passport) =>
       @app.use(@app.router)
@@ -46,7 +64,7 @@ class exports.Server
     Statement = require './models/statement'
 
     console.log 'Server starting'
-    @app.listen @port
+    @http_server=@app.listen @port
     console.log 'Server listening on port ' + @port
 
     @app.get '/', (req, res) ->
@@ -144,18 +162,53 @@ class exports.Server
 
 
 # Socket IO
-    @io = require('socket.io').listen @app
+    @io = require('socket.io').listen @http_server
     count = 0
-    @io.sockets.on 'connection', (socket) =>
-      count++
-      console.log 'user connected ' + count
-      socket.emit 'count', { number: count }
-      socket.broadcast.emit 'count', { number: count }
+    @io.set "authorization", (data, accept) =>
 
-      socket.on 'disconnect', () =>
-        count--
-        console.log 'user disconnected '
-        socket.broadcast.emit 'count', { number: count }
+      # NOTE: To detect which session this socket is associated with,
+      #   *       we need to parse the cookies.
+
+      return accept("Session cookie required.", false)  unless data.headers.cookie
+
+      # NOTE: Next, verify the signature of the session cookie.
+      cookie_tmp = @cookie.parse(data.headers.cookie)
+
+      data.cookie = @connect.utils.parseSignedCookies(cookie_tmp, 'test')
+
+      #console.log "data cookies", data.cookie
+      # NOTE: save ourselves a copy of the sessionID.
+      data.sessionID = data.cookie["sessionID"]
+
+      @sessionStore.get data.sessionID, (err, session) ->
+        if err
+          return accept("Error in session store.", false)
+        else return accept("Session not found.", false)  unless session
+        console.log 'loaded session user', session.passport.user
+        # success! we're authenticated with a known session.
+        data.session = session
+        data.user = session.passport.user
+        accept null, true
+
+
+    @io.sockets.on "connection", (socket) ->
+      hs = socket.handshake
+      console.log "A socket with sessionID " + hs.sessionID + " connected."
+
+      socket.on 'statement', (statement_json) ->
+        console.log "Socket IO: new statement", statement_json
+        Statement.create statement_json, (err,stmt) ->
+          if err
+            console.log "Error occured", err
+            return
+          stmt.get_representation 0, (err, representation) ->
+            if err
+              console.log "Error occured", err
+              return
+            socket.emit "confirm", representation
+
+      socket.on "disconnect", ->
+        console.log "A socket with sessionID " + hs.sessionID + " disconnected."
     callback()
 
   stop: (callback) ->
