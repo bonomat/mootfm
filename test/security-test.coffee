@@ -20,12 +20,10 @@ describe "Login Test", ->
       username: "test@user.at"
     User.get_by_username "test@user.at" , (err, user) ->
       if (err)
-        User.create user_data, (err,user)->
-          console.log "ignored err" if err
-          console.log "user saved" if !err
-          
-          
-    require('../server').start done
+        User.create user_data, (err, user)->
+          require('../server').start done
+      else
+        require('../server').start done
   it "should be successful.", (done) ->
     http
       method: "Post"
