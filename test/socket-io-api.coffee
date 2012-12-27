@@ -31,7 +31,7 @@ options =
   'force new connection':true
 
 create_user = (callback)->
-  User.get_by_username "test@user.at" , (err, user) ->
+  User.get_by_username user_data.email , (err, user) ->
     if (err)
       User.create user_data, callback
     else
@@ -47,13 +47,13 @@ login = (callback)->
       password: user_data.password
   , (err, res, body) ->
     return done err if err
-    res.headers.location.should.be.equal "/success"
+    res.headers.location.should.be.equal "/loggedin"
     res.statusCode.should.be.equal 302
     http
       method: "GET"
-      url: url + res.headers.location
+      url: url + "/statement"
     , (err, res, body) ->
-      res.body.search("test@user.at").should.not.be.equal -1
+      res.body.search(user_data.email).should.not.be.equal -1
 
       options.query=res.request.headers.cookie
       callback()
