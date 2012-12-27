@@ -27,20 +27,20 @@ describe "Login Test", ->
           
     require('../server').start done
   it "should be successful.", (done) ->
-    body_json = JSON.stringify
-      username: 'test@user.at'
-      password: 'password'   
-      
-    console.log "sending body", body_json
     http
       method: "Post"
       url: url + "/login"
-      json: true
-      body: 
-        username: 'test@user.at', 
+      followRedirect:false
+      form: 
+        username: 'test@user.at'
         password: 'password'
     , (err, res, body) ->
-      console.log "errormessage", err
       return done err if err
-      res.statusCode.should.be.equal 201
-      done()
+      res.headers.location.should.be.equal "/success"
+      res.statusCode.should.be.equal 302
+      http
+        method: "GET"
+        url: url + res.headers.location
+      , (err, res, body) ->
+        res.body.search("test@user.at").should.not.be.equal -1
+        done()
