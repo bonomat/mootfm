@@ -84,6 +84,12 @@ client1.on "error", (error) ->
 
 openWindow = (url) ->
   created_window = window.open(url, 'login window', 'height=200','width=200','modal=yes','alwaysRaised=yes')
+  created_window.onunload=()->{'window unloaded'};
+  client1.emit "statement",testState
+PopupUnload = (wnd) ->
+  setTimeout (-> # setTimeout is for IE
+    alert "You just killed me..."  if wnd.closed
+  ), 10
 
 $("#google-login-btn").click ->
   openWindow('/auth/google')
