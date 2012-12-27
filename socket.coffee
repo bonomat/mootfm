@@ -185,14 +185,16 @@ class exports.Server
       #console.log "data cookies", data.cookie
       # NOTE: save ourselves a copy of the sessionID. 
       data.sessionID = data.cookie["sessionID"]
-      
+      console.log 'sessionStore', @sessionStore
       sessionID_var = data.sessionID
       console.log 'sessionID', data.sessionID
+      
+          
       @sessionStore.get data.sessionID, (err, session) ->
         if err
           return accept("Error in session store.", false)
         else return accept("Session not found.", false)  unless session
-        
+        console.log 'loaded session', session 
         # success! we're authenticated with a known session.
         data.session = session
         accept null, true    
