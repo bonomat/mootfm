@@ -166,21 +166,21 @@ class exports.Server
     @io = require('socket.io').listen @http_server
     count = 0
     @io.set "authorization", (data, accept) =>
-
+      if data.headers.cookie
+        cookie = @cookie.parse(data.headers.cookie)
+      else
+        cookie = data.query
       # NOTE: To detect which session this socket is associated with,
       #   *       we need to parse the cookies.
 
-      return accept("Session cookie required.", false)  unless data.headers.cookie
+      return accept("Session cookie required.", false)  unless cookie
 
       # NOTE: Next, verify the signature of the session cookie.
-      cookie_tmp = @cookie.parse(data.headers.cookie)
-
-      data.cookie = @connect.utils.parseSignedCookies(cookie_tmp, 'test')
+      data.cookie = @connect.utils.parseSignedCookies(cookie, 'test')
 
       #console.log "data cookies", data.cookie
       # NOTE: save ourselves a copy of the sessionID.
       data.sessionID = data.cookie["sessionID"]
-
       @sessionStore.get data.sessionID, (err, session) ->
         if err
           return accept("Error in session store.", false)
