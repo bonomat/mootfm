@@ -12,7 +12,7 @@ logfile = require('fs').createWriteStream 'extravagant-zombie.log'
 url = "http://localhost:8081"
 
 describe "Login Test", ->
-  beforeEach (done) ->
+  before (done) ->
     user_data=
       name: "Test User"
       email: "test@user.at"
@@ -20,11 +20,13 @@ describe "Login Test", ->
       username: "test@user.at"
     User.get_by_username "test@user.at" , (err, user) ->
       if (err)
-        User.create user_data, (err, user)->
-          require('../server').start done
-      else
-        require('../server').start done
-  it "should be successful.", (done) ->
+        User.create user_data, (err,user)->
+          console.log "ignored err" if err
+          console.log "user saved" if !err
+    require('../server').start done
+    
+   
+  it "login with username and password.", (done) ->
     http
       method: "Post"
       url: url + "/login"
@@ -41,6 +43,44 @@ describe "Login Test", ->
         url: url + res.headers.location
       , (err, res, body) ->
         res.body.search("test@user.at").should.not.be.equal -1
+        done()
+
+  it "login with illegal username and password.", (done) ->
+    http
+      method: "Post"
+      url: url + "/login"
+      followRedirect:false
+      form: 
+        username: 'illegalUsername'
+        password: 'password'
+    , (err, res, body) ->
+      return done err if err
+      res.headers.location.should.be.equal "/login"
+      res.statusCode.should.be.equal 302
+      http
+        method: "GET"
+        url: url + res.headers.location
+      , (err, res, body) ->
+        res.body.search("Incorrect username or password!").should.not.be.equal -1
+        done()
+        
+  it "login with username and wrong password.", (done) ->
+    http
+      method: "Post"
+      url: url + "/login"
+      followRedirect:false
+      form: 
+        username: 'test@user.at'
+        password: 'completelyWrongPassword'
+    , (err, res, body) ->
+      return done err if err
+      res.headers.location.should.be.equal "/login"
+      res.statusCode.should.be.equal 302
+      http
+        method: "GET"
+        url: url + res.headers.location
+      , (err, res, body) ->
+        res.body.search("Incorrect username or password!").should.not.be.equal -1
         done()
         
         

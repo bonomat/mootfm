@@ -27,16 +27,15 @@ class exports.Security
             console.log "ignored err" if err
             console.log "user saved" if !err
 
-
       passport.use new LocalStrategy (username, password, done) ->
         process.nextTick ->
           User.get_by_username username , (err, user) ->
             if (err)
               return done(null, false, { message: 'Incorrect username or password!' })
             if (!user)
-              return done(null, false, { message: 'Unknown user' })
-            if (user.password != password)
-              return done(null, false, { message: 'Invalid password' })
+              return done(null, false, { message: 'Incorrect username or password!' })
+            if ((user.password != password))
+              return done(null, false, { message: 'Incorrect username or password!' })
             return done(null, user)
 
       passport.use new GoogleStrategy {clientID: @conf.google.clientId, clientSecret: @conf.google.clientSecret, callbackURL: @conf.google.callbackURL}, (accessToken, refreshToken, profile, done) ->
@@ -62,7 +61,7 @@ class exports.Security
           done(err, user)
 
       app.post '/login', passport.authenticate('local', { successRedirect: '/success',  failureRedirect: '/login', failureFlash: true })
-          
+
       app.get "/auth/google", passport.authenticate("google", { scope: @conf.google.scope }), (req, res) ->  # this function will never be called, it is just needed for passportjs
 
       app.get '/auth/facebook', passport.authenticate('facebook'), (req, res) ->  # this function will never be called, it is just needed for passportjs
