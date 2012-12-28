@@ -22,8 +22,8 @@ async.map [statement_data, pro_statement_data,pro2_statement_data,contra_stateme
     return console.log(err) if err
     pro_lv2_statement.argue contra_statement, "pro", (err, callback) ->
       user_data=
-        name: "Tobias Hönisch"
-        email: "tobias@hoenisch.at"
+        name: "test user"
+        email: "test@demo.com"
         password: "ultrasafepassword"
       User.create user_data, (err, user)->
         user.vote statement, pro_statement, "pro", 1, (err,total_votes)=>

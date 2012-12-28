@@ -105,68 +105,6 @@ class exports.Server
     @app.get '/statement', (req, res) ->
       res.render('statement', {user: req.user, message: req.flash('error')})
 
-# REST API
-    version = "v0"
-    url_prefix= '/' + version
-    @app.get url_prefix + "/statement/:id", (req, res) ->
-      console.log "get statement"
-      Statement.get req.params.id, (err,stmt) ->
-        console.log "Error occured while loading statement:", err if err
-        return res.status(404).send {error:err} if err
-        stmt.get_representation 1, (err, representation) ->
-          console.log "Error occured while converting statement:", err if err
-          return res.status(500).send {error:err} if err
-          if not representation["sides"]["pro"]
-            representation["sides"]["pro"]=[]
-          if not representation["sides"]["contra"]
-            representation["sides"]["contra"]=[]
-          console.log "Delivering Statement:\n", JSON.stringify(representation, null, 2)
-          return res.send representation
-
-    @app.post url_prefix + '/statement', (req, res) ->
-      console.log "post statement"
-      Statement.create {title: req.body.title}, (err,stmt) ->
-        return res.status(500).send {error:err} if err
-        return res.status(201).send {id:stmt.id}
-
-    #make a new argument
-    @app.post url_prefix+'/statement/:id/side/:side', (req, res) ->
-      console.log "post statement side"
-      id=req.params.id
-      side=req.params.side
-      title=req.body.point
-      return res.send {error:"no title specified!"} unless title
-      Statement.get id, (err,stmt) ->
-        return res.status(404).send {error:err} if err
-        Statement.create {title: title}, (err,point)->
-          return res.status(500).send {error:err} if err
-          point.argue stmt, side, (err)->
-            return res.status(201).send {id:point.id}
-
-    @app.post url_prefix+'/statement/:id/side/:side/vote/:point', (req, res) ->
-      ###### FIX ME #####
-      user_data=
-        name: "Tobias Hönisch"
-        email: "tobias@hoenisch.at"
-        password: "ultrasafepassword"
-      User.create user_data, (err, user)->
-      ####################
-
-        console.log "post vote"
-        id=req.params.id
-        point_id=req.params.point
-        side=req.params.side
-        vote=req.body.vote
-        return res.status(400).send {error:"no vote specified!"} unless vote==-1 or vote==1
-        async.map [id, point_id], (item,callback)->
-          Statement.get item, callback
-        , (err, [stmt, point]) ->
-          return res.status(404).send {error:err} if err
-          user.vote stmt, point, side, vote, (err,total_votes)->
-            return res.status(500).send {error:err} if err
-            return res.status(200).send {votes:total_votes}
-
-
 # Socket IO
     @io = require('socket.io').listen @http_server
 #### Phil's part
