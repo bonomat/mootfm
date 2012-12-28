@@ -89,7 +89,6 @@ userpanelView = new views.UserpanelView
   model: user
 
 update_user_window = () ->
-  console.log 'hey'
   user.set(loggedin:true)
 
 
@@ -101,11 +100,6 @@ openWindow = (url) ->
     connect_client_io()
     update_user_window()
 
-  client1.emit "statement",testState
-PopupUnload = (wnd) ->
-  setTimeout (-> # setTimeout is for IE
-    alert "You just killed me..."  if wnd.closed
-  ), 10
 
 $("#google-login-btn").click ->
   openWindow('/auth/google')
