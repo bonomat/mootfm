@@ -72,6 +72,9 @@ options =
 testState=
   title:"Apple sucks"
 
+
+user = new models.User
+
 client1 = {}
 connect_client_io = () ->
   client1 = io.connect(url, options)
@@ -80,15 +83,14 @@ connect_client_io = () ->
     console.log "received",state
   client1.on "error", (error) ->
     console.log "received an error",error
+  client1.on "loggedin", (username) ->
+    user.set(loggedin: true, username:username)
 
-user = new models.User
 
 userpanelView = new views.UserpanelView
   el: "#userpanel"
   model: user
 
-update_user_window = () ->
-  user.set(loggedin:true, username:"bob")
 
 #### button logic
 
@@ -96,7 +98,6 @@ openWindow = (url) ->
   created_window = window.open(url, 'login window', 'height=200','width=200','modal=yes','alwaysRaised=yes')
   $(created_window).unload ->
     connect_client_io()
-    update_user_window()
 
 update_user_panel_buttons = () ->
   $("#google-login-btn").click ->

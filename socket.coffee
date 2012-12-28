@@ -211,7 +211,8 @@ class exports.Server
           return
         else
           socket.user= user
-          console.log "A socket with sessionID " + hs.sessionID + " connected."
+          console.log "A socket with sessionID " + hs.sessionID + " and username: " + user.username + " connected."
+          socket.emit "loggedin", user.username
 
       socket.on 'post', (statement_json) ->
         console.log "Socket IO: new statement", statement_json
