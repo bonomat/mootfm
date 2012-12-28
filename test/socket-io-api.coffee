@@ -53,8 +53,9 @@ login = (callback)->
       method: "GET"
       url: url + "/statement"
     , (err, res, body) ->
+      console.log "got here"
       res.body.search(user_data.email).should.not.be.equal -1
-
+      console.log "got here2"
       options.query= res.request.headers.cookie
       callback()
 

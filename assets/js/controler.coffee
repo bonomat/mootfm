@@ -75,7 +75,6 @@ testState=
 client1 = {}
 connect_client_io = () ->
   client1 = io.connect(url, options)
-  console.log client1
   client1.emit "statement",testState
   client1.on "confirm", (state) ->
     console.log "received",state
@@ -89,8 +88,7 @@ userpanelView = new views.UserpanelView
   model: user
 
 update_user_window = () ->
-  user.set(loggedin:true)
-#ser.set(username:'bob')
+  user.set(loggedin:true, username:"bob")
 
 #### button logic
 
