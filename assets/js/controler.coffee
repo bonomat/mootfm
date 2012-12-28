@@ -30,16 +30,27 @@ AppRouter = Backbone.Router.extend
     "":"empty"
     ":id": "statement"
 
-  empty: ->
-
   connect_socket_io: ->
     console.log "creating connection for socket io"
+
     @socket=socket = io.connect(url, options)
+
+    @socket.on 'connect', ->
+      console.info 'successfully established a working connection'
+
+    @socket.on 'error', (err)->
+      console.info 'Socket IO Error:', err
+
     @socket.on "statement", (stmts)=>
-      @collections.cache.add stmts, merge: true
+      console.log "receiving data over socket"
+      @models.cache.add stmts, merge: true
+
+  empty: ->
+    console.log "empty handler called"
 
   statement: (id) ->
-    @models.page.set "id", id
+    console.log "updating page to:", id
+    @models.page.set "id", parseInt id
 
   initialize: ->
     console.log "initializing router"
@@ -51,6 +62,7 @@ AppRouter = Backbone.Router.extend
       right_side : right_side = new models.Side()
       left_side : left_side = new models.Side()
 
+    console.log "models:",@models
     @views=
       titleView : new views.TitleView
         el: "#title"
@@ -65,19 +77,29 @@ AppRouter = Backbone.Router.extend
     
     cache.on "add", (model, collection, options) =>
       #scan through points and put into appropriate sides
-      if model.get("id")==@id
+      console.log "receiving data in cache:", model
+      model.socket= @socket
+      id= @models.page.get "id"
+      model_id=model.get("id")
+      console.log "current title id:", id, "model incoming:", model_id, typeof(model_id)
+      if model_id==id
+        console.log "cache add title model"
         @views.titleView.update_model(model)
-      else if model.get("parent")==@id
+      else if model.get("parent")==id
         switch model.get "side"
           when "pro"
+            console.log "cache add left side"
             left_side.add(model)
           when "contra"
+            console.log "cache add right side"
             right_side.add(model)
 
     page.on "change", =>
+      console.log "page change called"
       if page.hasChanged "id"
         id= page.get "id"
-        socket.emit "get", id
+        console.log "page change:", id
+        @socket.emit "get", id
         left_points= cache.where parent: id, side: "pro"
         right_points= cache.where parent: id, side: "contra"
         left_side.reset left_points
@@ -85,4 +107,6 @@ AppRouter = Backbone.Router.extend
         @views.titleView.update_model cache.get id
 
 router= new AppRouter()
+Backbone.history.start();
+
 

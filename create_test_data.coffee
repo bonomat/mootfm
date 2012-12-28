@@ -25,6 +25,7 @@ async.map [statement_data, pro_statement_data,pro2_statement_data,contra_stateme
         name: "test user"
         email: "test@demo.com"
         password: "ultrasafepassword"
+        username: "test"
       User.create user_data, (err, user)->
         user.vote statement, pro_statement, "pro", 1, (err,total_votes)=>
           user.vote contra_statement, pro_lv2_statement, "pro", -1, (err,total_votes)=>

@@ -4,7 +4,8 @@ module.exports.TitleView = Backbone.View.extend
     template = Handlebars.compile($("#title_template").html())
 
     # Load the compiled HTML into the Backbone "el"
-    $(@el).html template @model.toJSON()
+    if @model
+      $(@el).html template @model.toJSON()
     return @
 
   update_model: (@model)->
@@ -34,6 +35,7 @@ module.exports.SideView = Backbone.View.extend
     @collection.bind "add", @add
     @collection.bind "remove", @remove
     @collection.on "reset", =>
+      console.log "reset called on side view"
       @render()
     @render()
 
@@ -48,7 +50,7 @@ module.exports.SideView = Backbone.View.extend
     return @
 
   add: (point) ->
-    # We create an updating donut view for each donut that is added.
+    console.log "adding point to side view", point
     pointview = new PointView(
       tagName: "li"
       model: point
