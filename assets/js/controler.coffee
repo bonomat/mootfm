@@ -90,7 +90,7 @@ userpanelView = new views.UserpanelView
 
 update_user_window = () ->
   user.set(loggedin:true)
-
+#ser.set(username:'bob')
 
 #### button logic
 
@@ -100,11 +100,12 @@ openWindow = (url) ->
     connect_client_io()
     update_user_window()
 
+update_user_panel_buttons = () ->
+  $("#google-login-btn").click ->
+    openWindow('/auth/google')
+  $("#twitter-login-btn").click ->
+    openWindow('/auth/twitter')
+  $("#fb-login-btn").click ->
+    openWindow('/auth/facebook')
 
-$("#google-login-btn").click ->
-  openWindow('/auth/google')
-$("#twitter-login-btn").click ->
-  openWindow('/auth/twitter')
-$("#fb-login-btn").click ->
-  openWindow('/auth/facebook')
-
+update_user_panel_buttons()

@@ -83,7 +83,7 @@ module.exports.UserpanelView = UserpanelView = Backbone.View.extend
         @render()
 
   render: ->
-    if !@model.loggedin
+    if !(@model.get('loggedin'))
       template = Handlebars.compile($("#not_loggedin_template").html())
     else
       template = Handlebars.compile($("#loggedin_template").html())
