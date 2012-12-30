@@ -26,7 +26,9 @@ block body
         textarea.field.span6#new_pro_point_template.input-xlarge(type="text", rows=3)
 
   #templates(style='display:none')
+    
     include includes/userpanel
+
     #title_template(type="text/template")
       .well
         #title
@@ -35,12 +37,12 @@ block body
     #point_template(type="text/template")
       .well(rows=3)
         .pull-right
-          h3 {{votes}}
+          h3 {{vote}}
           ul
             .unstyled
               i.icon-thumbs-up
             .unstyled
               i.icon-thumbs-down
-        a(href='#/{{point_id}}') {{title}}
+        a(href='#/{{id}}') {{title}}
 
   script(src="/browserify.js")

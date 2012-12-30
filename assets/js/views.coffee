@@ -1,13 +1,16 @@
 module.exports.TitleView = Backbone.View.extend
-  initialize: ->
-    @render()
-
   render: ->
     # Compile the template using Handlebars
     template = Handlebars.compile($("#title_template").html())
 
     # Load the compiled HTML into the Backbone "el"
-    $(@el).html template @model.toJSON()
+    if @model
+      $(@el).html template @model.toJSON()
+    return @
+
+  update_model: (@model)->
+    #somehow change the model
+    @render()
 
 module.exports.PointView = PointView = Backbone.View.extend
   initialize: ->
@@ -24,7 +27,7 @@ module.exports.PointView = PointView = Backbone.View.extend
     $(@el).html template @model.toJSON()
     @
 
-module.exports.SideView = Backbone.View.extend(
+module.exports.SideView = Backbone.View.extend
   initialize : (options) ->
     _(this).bindAll "add", "remove"
     @_pointViews = {}
@@ -32,6 +35,7 @@ module.exports.SideView = Backbone.View.extend(
     @collection.bind "add", @add
     @collection.bind "remove", @remove
     @collection.on "reset", =>
+      console.log "reset called on side view"
       @render()
     @render()
 
@@ -46,7 +50,7 @@ module.exports.SideView = Backbone.View.extend(
     return @
 
   add: (point) ->
-    # We create an updating donut view for each donut that is added.
+    console.log "adding point to side view", point
     pointview = new PointView(
       tagName: "li"
       model: point
@@ -73,7 +77,6 @@ module.exports.SideView = Backbone.View.extend(
     )[0]
     @_pointViews = _(@_pointViews).without(viewToRemove)
     $(viewToRemove.el).remove() if @_rendered
-)
 
 module.exports.UserpanelView = UserpanelView = Backbone.View.extend
   initialize: ->
@@ -83,6 +86,7 @@ module.exports.UserpanelView = UserpanelView = Backbone.View.extend
         @render()
 
   render: ->
+    console.log "user updated", @model.get('loggedin'), @model.get('username')
     if !(@model.get('loggedin'))
       template = Handlebars.compile($("#not_loggedin_template").html())
     else
