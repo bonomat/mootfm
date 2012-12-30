@@ -36,7 +36,7 @@ describe "Login Test", ->
         password: user_data.password
     , (err, res, body) ->
       return done err if err
-      res.headers.location.should.be.equal "/success"
+      res.headers.location.should.be.equal "/loggedin"
       res.statusCode.should.be.equal 302
       http
         method: "GET"
