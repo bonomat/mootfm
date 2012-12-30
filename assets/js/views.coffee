@@ -56,7 +56,6 @@ module.exports.SideView = Backbone.View.extend
     @collection.bind "add", @add
     @collection.bind "remove", @remove
     @collection.on "reset", =>
-      console.log "reset called on side view"
       @render()
     @render()
 
@@ -71,7 +70,6 @@ module.exports.SideView = Backbone.View.extend
     return @
 
   add: (point) ->
-    console.log "adding point to side view", point
     pointview = new PointView(
       tagName: "li"
       model: point

@@ -108,7 +108,7 @@ AppRouter = Backbone.Router.extend
       #scan through points and put into appropriate sides
       model.socket= @socket
       id= @models.page.get "id"
-      model_id= model.get("id")
+      model_id= model.get "id"
       if model_id==id
         @views.titleView.update_model(model)
       else if model.get("parent")==id
