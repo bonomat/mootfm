@@ -60,7 +60,7 @@ class exports.Security
         User.get_by_username username, (err, user) ->
           done(err, user)
 
-      app.post '/login', passport.authenticate('local', { successRedirect: '/loggedin',  failureRedirect: '/login', failureFlash: true })
+      app.post '/login', passport.authenticate('local', { successRedirect: '/statement',  failureRedirect: '/login', failureFlash: true })
 
       app.get "/auth/google", passport.authenticate("google", { scope: @conf.google.scope }), (req, res) ->  # this function will never be called, it is just needed for passportjs
 

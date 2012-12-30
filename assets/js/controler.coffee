@@ -86,6 +86,8 @@ connect_client_io = () ->
   client1.on "loggedin", (username) ->
     user.set(loggedin: true, username:username)
 
+##needed if comming from username/password loggin
+connect_client_io()
 
 userpanelView = new views.UserpanelView
   el: "#userpanel"
