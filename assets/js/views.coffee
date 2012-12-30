@@ -1,3 +1,5 @@
+models = require "./models.coffee"
+
 module.exports.TitleView = Backbone.View.extend
   render: ->
     # Compile the template using Handlebars
@@ -9,8 +11,27 @@ module.exports.TitleView = Backbone.View.extend
     return @
 
   update_model: (@model)->
-    #somehow change the model
     @render()
+
+module.exports.InputView = Backbone.View.extend
+  render: ->
+    # Compile the template using Handlebars
+    template = Handlebars.compile($("#input_template").html())
+
+    # Load the compiled HTML into the Backbone "el"
+    if @model
+      $(@el).html template @model.toJSON()
+    return @
+
+  reset_model: (model)->
+    if model
+      @model=model
+      model.set "title", @$el.find("textarea").val()
+    else
+      @model = new models.Point(title: @$el.find("textarea").val())
+
+    @render()
+
 
 module.exports.PointView = PointView = Backbone.View.extend
   initialize: ->
