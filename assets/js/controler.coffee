@@ -48,15 +48,14 @@ update_user_panel_buttons = () ->
     $.post "/login",
       username: $("#username").val()
       password: $("#password").val()
-    , (html) ->
+    , (html) ->      
+      router.connect_socket_io()
       htmlObject = document.createElement("div")
       htmlObject.innerHTML = html
       b = $(htmlObject).find("#errors")
       console.log $(b).text()
-      alert($(b).text())
       # TODO show this error somewhere
       $("#errors").html(b.text())
-      router.connect_socket_io()
 
 
 
