@@ -7,24 +7,33 @@ io = require('socket.io-client')
 url = "http://localhost:8081"
 options =
   transports: ['websockets']
+  'force new connection':true
+
+testState=
+  title:"Apple sucks"
+
+user = new models.User
+
+userpanelView = new views.UserpanelView
+  el: "#userpanel"
+  model: user
 
 #### button logic
 openWindow = (url) ->
   created_window = window.open(url, 'login window', 'height=200','width=200','modal=yes','alwaysRaised=yes')
   $(created_window).unload ->
+    console.log "window is closed"
     router.connect_socket_io()
 
-PopupUnload = (wnd) ->
-  setTimeout (-> # setTimeout is for IE
-    alert "You just killed me..."  if wnd.closed
-  ), 10
+update_user_panel_buttons = () ->
+  $("#google-login-btn").click ->
+    openWindow('/auth/google')
+  $("#twitter-login-btn").click ->
+    openWindow('/auth/twitter')
+  $("#fb-login-btn").click ->
+    openWindow('/auth/facebook')
 
-$("#google-login-btn").click ->
-  openWindow('/auth/google')
-$("#twitter-login-btn").click ->
-  openWindow('/auth/twitter')
-$("#fb-login-btn").click ->
-  openWindow('/auth/facebook')
+update_user_panel_buttons()
 
 AppRouter = Backbone.Router.extend
   routes:
@@ -34,7 +43,7 @@ AppRouter = Backbone.Router.extend
   connect_socket_io: ->
     console.log "creating connection for socket io"
 
-    @socket=socket = io.connect(url, options)
+    @socket= socket = io.connect(url, options)
 
     @socket.on 'connect', ->
       console.info 'successfully established a working connection'
@@ -44,6 +53,10 @@ AppRouter = Backbone.Router.extend
 
     @socket.on "statement", (stmts)=>
       @models.cache.add stmts, merge: true
+
+    @socket.on "loggedin", (username) ->
+      console.log "loggin iop receiving", username
+      user.set(loggedin: true, username:username)
 
   empty: ->
     console.log "empty handler called"
@@ -126,5 +139,4 @@ AppRouter = Backbone.Router.extend
 
 router= new AppRouter()
 Backbone.history.start();
-
 

@@ -78,7 +78,7 @@ class exports.Server
       res.render('register', {userData: {}, message: req.flash('error')})
 
     @app.get '/loggedin', (req, res) ->
-      res.render('loggedin', {userData: {}, message: req.flash('error')})
+      res.render('loggedin', {user: req.user, message: req.flash('error')})
 
     @app.get '/logout', (req, res) ->
       #TODO: rethink if it is possible over socketID -> without
@@ -107,10 +107,6 @@ class exports.Server
 
 # Socket IO
     @io = require('socket.io').listen @http_server
-#### Phil's part
-    #@io
-    #  .of('/unauthorized')
-    #  .on('connection')
 
     @io.set "authorization", (data, accept) =>
       console.log "authorization called"
@@ -149,7 +145,8 @@ class exports.Server
           return
         else
           socket.user= user
-          console.log "A socket with sessionID " + hs.sessionID + " connected."
+          console.log "A socket with sessionID " + hs.sessionID + " and username: " + user.username + " connected."
+          socket.emit "loggedin", user.username
 
       socket.on 'post', (statement_json) ->
         console.log "Socket IO: new statement", statement_json

@@ -1,0 +1,17 @@
+#userpanel_templates(style='display:none')
+  #not_loggedin_template(type="text/template")
+    h3 Not Authenticated
+      #register
+        a(href='/register') Register
+      #password-login
+        a(href='/login', style='border: 0px') Login with Password
+      #google-login
+        input(type="submit", id="google-login-btn", value="GLogin")
+      #twitter-login
+        input(type="submit", id="twitter-login-btn", value="TLogin")
+      #fb-login
+        input(type="submit", id="fb-login-btn", value="FLogin")
+
+  #loggedin_template(type="text/template")
+    h3 Welcome {{username}}
+    a(href='/logout') Logout

@@ -47,14 +47,13 @@ login = (callback)->
       password: user_data.password
   , (err, res, body) ->
     return done err if err
-    res.headers.location.should.be.equal "/loggedin", "wrong redirect, probably because of failed login"
+    res.headers.location.should.be.equal "/statement", "wrong redirect, probably because of failed login"
     res.statusCode.should.be.equal 302
+    console.log body
     http
       method: "GET"
       url: url + "/statement"
-    , (err, res, body) ->
-      res.body.search(user_data.email).should.not.be.equal -1
-
+    , (err, res, body) ->      
       options.query= res.request.headers.cookie
       callback()
 
