@@ -1,16 +1,9 @@
-
-- if (message)
-    #{message}
-
-form(action='/login', method='post')
-    p.error= message
-    div
-        label Username:
-        input(type='text', name='username')
-        br
-      div
-        label Password:
-        input(type='password', name='password')
-      div
-        input(type='submit', value='Log In')
-
+body
+      form(action='/login', method='post', id='login-form')
+        p.error= message
+        div
+            label Username:
+            input(type='text', name='username', id="username")
+            label Password:
+            input(type='password', name='password')
+            input(type='submit', value='Log In', id='login-btn')

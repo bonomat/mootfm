@@ -3,8 +3,15 @@
     h3 Not Authenticated
       #register
         a(href='/register') Register
-      #password-login
-        a(href='/login', style='border: 0px') Login with Password
+      form(action='/login', method='post', id='login-form')
+        p.error= message
+        div
+            label Username:
+            input(type='text', name='username', id="username")
+            label Password:
+            input(type='password', name='password', id="password")
+            input(type='submit', value='Log In', id='ignore')
+      input(type='submit', value='Log In', id='pw-login-btn')
       #google-login
         input(type="submit", id="google-login-btn", value="GLogin")
       #twitter-login

@@ -21,6 +21,19 @@ openWindow = (url) ->
   $(created_window).unload ->
     router.connect_socket_io()
 
+openPWWindow = () ->
+
+  # creating the 'formresult' window with custom features prior to submitting the form
+  #created_window = window.open("/login",  'login window', 'height=200','width=200','modal=yes','alwaysRaised=yes')
+  
+  #body.write(form)
+  #form.submit()
+  #$(created_window.document.body).append($("#login-form"))
+  alert $(created_window.document.body).children("form").html
+  console.log "form submitted"
+    
+
+
 update_user_panel_buttons = () ->
   $("#google-login-btn").click ->
     openWindow('/auth/google')
@@ -28,6 +41,20 @@ update_user_panel_buttons = () ->
     openWindow('/auth/twitter')
   $("#fb-login-btn").click ->
     openWindow('/auth/facebook')
+  $("#ignore").click (e)->
+    username = $("#username").val()
+    password = $("#password").val()
+    console.log "username ", username, " password ", password
+    e.preventDefault()
+    $.post "/login",
+      username: $("#username").val()
+      password: $("#password").val()
+    , (html) ->
+      # todo check for errors
+      console.log html
+      router.connect_socket_io()
+
+
 
 update_user_panel_buttons()
 
