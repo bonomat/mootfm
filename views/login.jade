@@ -1,6 +1,6 @@
 body
       form(action='/login', method='post', id='login-form')
-        p.error= message
+        div.error#errors= message
         div
             label Username:
             input(type='text', name='username', id="username")
