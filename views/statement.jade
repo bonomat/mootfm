@@ -14,13 +14,12 @@ block body
     .span6
       h3 Pro
       #left-side
-      #input-left
-        textarea.field.span6#new_pro_point_template.input-xlarge(type="text", rows=3)
+      #left-input
     .span6
       h3 Contra
       #right-side
-      #input-right
-        textarea.field.span6#new_pro_point_template.input-xlarge(type="text", rows=3)
+      #right-input
+      
 
   #templates(style='display:none')
 
@@ -39,5 +38,8 @@ block body
             .unstyled
               i.icon-thumbs-down
         a(href='#/{{id}}') {{title}}
+        
+    #input_template
+      textarea.field.span6.input-xlarge(type="text", rows=3)
 
   script(src="/browserify.js")
