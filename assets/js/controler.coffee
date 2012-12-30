@@ -1,4 +1,5 @@
 # require dependency
+console.log "loaded the controler"
 views = require "./views.coffee"
 models = require "./models.coffee"
 
@@ -42,7 +43,7 @@ AppRouter = Backbone.Router.extend
       console.info 'Socket IO Error:', err
 
     @socket.on "statement", (stmts)=>
-      console.log "receiving data over socket"
+      console.log "receiving data over socket:", stmts
       @models.cache.add stmts, merge: true
 
   empty: ->
@@ -58,9 +59,14 @@ AppRouter = Backbone.Router.extend
 
     @models=
       page : page = new models.Page()
+      
       cache : cache =  new models.Cache()
-      right_side : right_side = new models.Side()
+      
       left_side : left_side = new models.Side()
+      right_side : right_side = new models.Side()
+
+      left_input: left_input = new models.Point(side:"pro",parent:page.get("id"))
+      right_input: right_input = new models.Point(side:"contra",parent:page.get("id"))
 
     console.log "models:",@models
     @views=
@@ -74,7 +80,20 @@ AppRouter = Backbone.Router.extend
       right_side : new views.SideView
         collection : @models.right_side
         el : "#right-side"
-    
+
+      left_input: new views.InputView
+        model: @models.left_input
+        el: "#left-input"
+      
+      right_input: new views.InputView
+        model: @models.right_input
+        el: "#right-input"
+
+    for input in [right_input, left_input]
+      input.on "change", =>
+        if (input.hasChanged("title"))
+          console.log "title changed", input.get "title"
+
     cache.on "add", (model, collection, options) =>
       #scan through points and put into appropriate sides
       console.log "receiving data in cache:", model
@@ -99,12 +118,27 @@ AppRouter = Backbone.Router.extend
       if page.hasChanged "id"
         id= page.get "id"
         console.log "page change:", id
+        console.log "cache ids:", cache
         @socket.emit "get", id
         left_points= cache.where parent: id, side: "pro"
+        console.log "left points found", left_points
         right_points= cache.where parent: id, side: "contra"
+        console.log "right points found", right_points
         left_side.reset left_points
         right_side.reset right_points
         @views.titleView.update_model cache.get id
+
+    for side in [left_side, right_side]
+      side.on "reset", =>
+        console.log "reset called"
+        cache.each (point)->
+          console.log "sending add for point:", point
+          cache.trigger "add", point
+
+    cache.on "change", (model)=>
+        console.log "cache change called for model", model
+        if model.hasChanged "parent" or model.hasChanged "vote"
+          cache.trigger "add", model
 
 router= new AppRouter()
 Backbone.history.start();
