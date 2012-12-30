@@ -9,15 +9,6 @@ options =
   transports: ['websockets']
   'force new connection':true
 
-testState=
-  title:"Apple sucks"
-
-user = new models.User
-
-userpanelView = new views.UserpanelView
-  el: "#userpanel"
-  model: user
-
 #### button logic
 openWindow = (url) ->
   created_window = window.open(url, 'login window', 'height=200','width=200','modal=yes','alwaysRaised=yes')
@@ -56,7 +47,7 @@ AppRouter = Backbone.Router.extend
 
     @socket.on "loggedin", (username) ->
       console.log "loggin iop receiving", username
-      user.set(loggedin: true, username:username)
+      router.models.user.set(loggedin: true, username:username)
 
   empty: ->
     console.log "empty handler called"
@@ -78,6 +69,8 @@ AppRouter = Backbone.Router.extend
       left_input: left_input = new models.Point(side:"pro",parent:page.get("id"))
       right_input: right_input = new models.Point(side:"contra",parent:page.get("id"))
 
+      user: new models.User
+
     console.log "models:",@models
     @views=
       titleView : new views.TitleView
@@ -98,6 +91,10 @@ AppRouter = Backbone.Router.extend
       right_input: new views.InputView
         model: @models.right_input
         el: "#right-input"
+
+      userpanelView: new views.UserpanelView
+        el: "#userpanel"
+        model: @models.user
 
     for input in [right_input, left_input]
       input.on "change", =>
