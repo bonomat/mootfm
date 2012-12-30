@@ -43,18 +43,15 @@ AppRouter = Backbone.Router.extend
       console.info 'Socket IO Error:', err
 
     @socket.on "statement", (stmts)=>
-      console.log "receiving data over socket:", stmts
       @models.cache.add stmts, merge: true
 
   empty: ->
     console.log "empty handler called"
 
   statement: (id) ->
-    console.log "updating page to:", id
     @models.page.set "id", parseInt id
 
   initialize: ->
-    console.log "initializing router"
     @connect_socket_io()
 
     @models=
@@ -96,47 +93,34 @@ AppRouter = Backbone.Router.extend
 
     cache.on "add", (model, collection, options) =>
       #scan through points and put into appropriate sides
-      console.log "receiving data in cache:", model
       model.socket= @socket
       id= @models.page.get "id"
-      model_id=model.get("id")
-      console.log "current title id:", id, "model incoming:", model_id, typeof(model_id)
+      model_id= model.get("id")
       if model_id==id
-        console.log "cache add title model"
         @views.titleView.update_model(model)
       else if model.get("parent")==id
         switch model.get "side"
           when "pro"
-            console.log "cache add left side"
             left_side.add(model)
           when "contra"
-            console.log "cache add right side"
             right_side.add(model)
 
     page.on "change", =>
-      console.log "page change called"
       if page.hasChanged "id"
         id= page.get "id"
-        console.log "page change:", id
-        console.log "cache ids:", cache
         @socket.emit "get", id
         left_points= cache.where parent: id, side: "pro"
-        console.log "left points found", left_points
         right_points= cache.where parent: id, side: "contra"
-        console.log "right points found", right_points
         left_side.reset left_points
         right_side.reset right_points
         @views.titleView.update_model cache.get id
 
     for side in [left_side, right_side]
       side.on "reset", =>
-        console.log "reset called"
         cache.each (point)->
-          console.log "sending add for point:", point
           cache.trigger "add", point
 
     cache.on "change", (model)=>
-        console.log "cache change called for model", model
         if model.hasChanged "parent" or model.hasChanged "vote"
           cache.trigger "add", model
 
