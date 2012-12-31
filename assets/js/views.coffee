@@ -14,6 +14,9 @@ module.exports.TitleView = Backbone.View.extend
     @render()
 
 module.exports.InputView = Backbone.View.extend
+  initialize: ->
+    @render()
+    
   render: ->
     # Compile the template using Handlebars
     template = Handlebars.compile($("#input_template").html())
