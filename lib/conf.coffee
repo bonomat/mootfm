@@ -12,5 +12,9 @@ module.exports =
     appId: "393105680742125"
     appSecret: "eb08156c448051d2f78153016cfc7e95"
     callbackURL: "/auth/facebook/callback"
+
+  debug: false
+  url: "http://www.moot.fm:80"
+  debug_url: "http://localhost:8081"
     
     

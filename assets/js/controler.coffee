@@ -2,9 +2,15 @@
 console.log "loaded the controler"
 views = require "./views.coffee"
 models = require "./models.coffee"
+io = require 'socket.io-client'
+conf = require '../../lib/conf'
 
-io = require('socket.io-client')
-url = "http://localhost:8081"
+console.log conf
+if conf.debug
+  url = conf.debug_url
+else
+  url = conf.url
+console.log "url", url
 options =
   transports: ['websockets']
   'force new connection':true
