@@ -14,7 +14,7 @@ module.exports =
     callbackURL: "/auth/facebook/callback"
 
   debug: false
-  url: "http://www.moot.fm:80"
+  url: "http://app.moot.fm:80"
   debug_url: "http://localhost:8081"
     
     
