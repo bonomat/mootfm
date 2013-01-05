@@ -5,12 +5,10 @@ models = require "./models.coffee"
 io = require 'socket.io-client'
 conf = require '../../lib/conf'
 
-console.log conf
 if conf.debug
   url = conf.debug_url
 else
   url = conf.url
-console.log "url", url
 options =
   transports: ['websockets']
   'force new connection':true
@@ -71,6 +69,7 @@ AppRouter = Backbone.Router.extend
   routes:
     "":"empty"
     ":id": "statement"
+    ":id/vote/:point/:amount": "vote"
 
   connect_socket_io: ->
     console.log "creating connection for socket io"
@@ -99,6 +98,11 @@ AppRouter = Backbone.Router.extend
   statement: (id) ->
     console.log "setting page to ", id
     @models.page.set "id", parseInt id
+
+  vote: (id,point_id, amount) ->
+    point = @models.cache.get parseInt point_id
+    @socket.emit "vote", point, parseInt amount 
+    @navigate('/'+id);
 
   initialize: ->
     @connect_socket_io()

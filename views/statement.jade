@@ -39,9 +39,11 @@ block body
           h3 {{vote}}
           ul
             .unstyled
-              i.icon-thumbs-up
+              a(href='#/{{parent}}/vote/{{id}}/1')
+                i.icon-thumbs-up
             .unstyled
-              i.icon-thumbs-down
+              a(href='#/{{parent}}/vote/{{id}}/-1')
+                i.icon-thumbs-down
         a(href='#/{{id}}') {{title}}
         
     #input_template

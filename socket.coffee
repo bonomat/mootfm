@@ -204,7 +204,6 @@ class exports.Server
           console.log "Wrong parameters for vote!" 
           return
 
-          #/statement/:id/side/:side/vote/:point'
         console.log "post vote"
         id = stmt.parent
         point_id = stmt.id

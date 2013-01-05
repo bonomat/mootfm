@@ -44,7 +44,7 @@ module.exports.PointView = PointView = Backbone.View.extend
     @render()
 
     @model.on "change", =>
-      if (@model.hasChanged("votes") or @model.hasChanged("id"))
+      if (@model.hasChanged("vote") or @model.hasChanged("id"))
         @render()
 
   render: ->
@@ -60,6 +60,8 @@ module.exports.SideView = Backbone.View.extend
     @collection.bind "add", @add
     @collection.bind "remove", @remove
     @collection.on "reset", =>
+      @render()
+    @collection.on "sort", =>
       @render()
     @render()
 

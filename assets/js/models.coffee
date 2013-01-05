@@ -38,9 +38,11 @@ module.exports.Point = Point= Backbone.Model.extend
 module.exports.Side = Backbone.Collection.extend
   model: Point
   comparator: (point)->
-    return point.get("votes")*-1
+    return point.get("vote")*-1
+
   initialize: ->
-    @bind "change", ->
+    @bind "change", =>
+      console.log "sorting", @
       @sort()
 
 module.exports.User = User = Backbone.Model.extend
