@@ -4,15 +4,14 @@ module.exports.Page = Page= Backbone.Model.extend
 
 module.exports.Point = Point= Backbone.Model.extend
   defaults:
-    id: 0
     title: ""
     parent: 0
     vote: 0
     side: "pro"
-    user:
-      userid:0
-      name: ""
-      picture_url: "./placeholder.gif"
+    #user:
+    #  userid:0
+    #  name: ""
+    #  picture_url: "./placeholder.gif"
 
   sync: (method, model, options) ->
     #entry point for method
@@ -48,6 +47,9 @@ module.exports.User = User = Backbone.Model.extend
   defaults:
     loggedin: false
     username: ""
+
+module.exports.InputBucket = InputBucket = Backbone.Collection.extend
+  model: Point
 
 module.exports.Cache = Backbone.Collection.extend
   model: Point

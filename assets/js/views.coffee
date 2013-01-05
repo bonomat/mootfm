@@ -14,40 +14,41 @@ module.exports.TitleView = Backbone.View.extend
     @render()
 
 module.exports.InputView = Backbone.View.extend
+  events: 
+    'keydown :input': 'keypress'
+  
   initialize: ->
+    @collection.on "reset", =>
+      @reset
     @render()
-    
-  render: ->
-    # Compile the template using Handlebars
-    template = Handlebars.compile($("#input_template").html())
 
-    # Load the compiled HTML into the Backbone "el"
-    if @model
-      $(@el).html template @model.toJSON()
+  keypress: (e)->
+    console.log @options.side, e.type, e.keyCode
+    if e.keyCode is 13 and not e.shiftKey
+      e.preventDefault() # Makes no difference
+      model = new models.Point "title": @$el.find("textarea").val(), "side":@options.side
+      @collection.add model
+      console.log "setting title:", model
+
+  render: ->
+    template = Handlebars.compile($("#input_template").html())
+    $(@el).html template()
     return @
 
-  reset_model: (model)->
-    if model
-      @model=model
-      model.set "title", @$el.find("textarea").val()
-    else
-      @model = new models.Point(title: @$el.find("textarea").val())
-
-    @render()
-
+  reset: ->
+    console.log "reset called"
+    @$el.find("textarea").val("")
 
 module.exports.PointView = PointView = Backbone.View.extend
   initialize: ->
     @render()
+
     @model.on "change", =>
-      if (@model.hasChanged("votes"))
+      if (@model.hasChanged("votes") or @model.hasChanged("id"))
         @render()
 
   render: ->
-    # Compile the template using Handlebars
     template = Handlebars.compile($("#point_template").html())
-
-    # Load the compiled HTML into the Backbone "el"
     $(@el).html template @model.toJSON()
     @
 

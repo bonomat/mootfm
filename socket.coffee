@@ -166,15 +166,17 @@ class exports.Server
               else
                 callback null, null
             (parent, callback) ->
-              console.log "parent received",parent
               stmt.get_all_points 0, (err, points) ->
                 if err
                   console.log "Error occured", err
                   return
                 if parent
-                  points.parent=parent.id
-                  points.vote=0
-                  points.side=statement_json.side
+                  point=points[0]
+                  point.parent=parent.id
+                  point.vote=0
+                  point.side=statement_json.side
+                  if statement_json.cid
+                    point.cid=statement_json.cid 
                 socket.emit "statement", points
                 callback()
           ], (err) ->

@@ -68,7 +68,6 @@ AppRouter = Backbone.Router.extend
 
   connect_socket_io: ->
     console.log "creating connection for socket io"
-
     @socket= socket = io.connect(url, options)
 
     @socket.on 'connect', ->
@@ -78,7 +77,12 @@ AppRouter = Backbone.Router.extend
       console.info 'Socket IO Error:', err
 
     @socket.on "statement", (stmts)=>
-      @models.cache.add stmts, merge: true
+      for stmt in stmts
+        if stmt.cid 
+          model= @models.cache.get stmt.cid 
+          model.set stmt
+        else
+          @models.cache.add stmt, merge: true
 
     @socket.on "loggedin", (username) ->
       user.set(loggedin: true, username:username)
@@ -87,22 +91,20 @@ AppRouter = Backbone.Router.extend
     console.log "empty handler called"
 
   statement: (id) ->
+    console.log "setting page to ", id
     @models.page.set "id", parseInt id
 
   initialize: ->
     @connect_socket_io()
-
     @models=
       page : page = new models.Page()
       
       cache : cache =  new models.Cache()
       
-      left_side : left_side = new models.Side()
-      right_side : right_side = new models.Side()
-
-      left_input: left_input = new models.Point(side:"pro",parent:page.get("id"))
-      right_input: right_input = new models.Point(side:"contra",parent:page.get("id"))
-
+      left_side : new models.Side()
+      right_side : new models.Side()
+      left_input_bucket : new models.InputBucket()
+      right_input_bucket : new models.InputBucket()
 
     @views=
       titleView : new views.TitleView
@@ -117,17 +119,22 @@ AppRouter = Backbone.Router.extend
         el : "#right-side"
 
       left_input: new views.InputView
-        model: @models.left_input
+        collection : @models.left_input_bucket
+        side: "pro"
         el: "#left-input"
       
       right_input: new views.InputView
-        model: @models.right_input
+        collection : @models.right_input_bucket
+        side: "contra"
         el: "#right-input"
 
-    for input in [right_input, left_input]
-      input.on "change", =>
-        if (input.hasChanged("title"))
-          console.log "title changed", input.get "title"
+    for bucket in [@models.left_input_bucket, @models.right_input_bucket]
+      bucket.on "add", (input_model, collection, options) =>
+        input_model.set "parent", @models.page.get "id"
+        @models.cache.add input_model
+        input_model.set "cid", input_model.cid
+        @socket.emit "post", input_model
+        bucket.reset()
 
     cache.on "add", (model, collection, options) =>
       #scan through points and put into appropriate sides
@@ -139,9 +146,9 @@ AppRouter = Backbone.Router.extend
       else if model.get("parent")==id
         switch model.get "side"
           when "pro"
-            left_side.add(model)
+            @models.left_side.add(model)
           when "contra"
-            right_side.add(model)
+            @models.right_side.add(model)
 
     page.on "change", =>
       if page.hasChanged "id"
@@ -149,11 +156,11 @@ AppRouter = Backbone.Router.extend
         @socket.emit "get", id
         left_points= cache.where parent: id, side: "pro"
         right_points= cache.where parent: id, side: "contra"
-        left_side.reset left_points
-        right_side.reset right_points
+        @models.left_side.reset left_points
+        @models.right_side.reset right_points
         @views.titleView.update_model cache.get id
 
-    for side in [left_side, right_side]
+    for side in [@models.left_side, @models.right_side]
       side.on "reset", =>
         cache.each (point)->
           cache.trigger "add", point

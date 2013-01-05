@@ -47,7 +47,7 @@ StatementView = Backbone.View.extend(
     return unless point
     $("#left-side textarea").val("")
     $.post "v0/statement/#{@model.get('id')}/side/pro", {point}, (data) =>
-      pro_points=@model.get("sides")["pro"]
+      pro_points= @model.get("sides")["pro"]
       pro_points.push({title:point, id:data["id"], vote:0})
       @model.trigger('change')
 
@@ -66,7 +66,7 @@ StatementView = Backbone.View.extend(
     return unless point
     $("#right-side textarea").val("")
     $.post "v0/statement/#{@model.get('id')}/side/contra", {point}, (data) =>
-      contra_points=@model.get("sides")["contra"]
+      contra_points= @model.get("sides")["contra"]
       contra_points.push({title:point, id:data["id"], vote:0})
       @model.trigger('change')
 
