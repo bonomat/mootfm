@@ -23,12 +23,10 @@ module.exports.InputView = Backbone.View.extend
     @render()
 
   keypress: (e)->
-    console.log @options.side, e.type, e.keyCode
     if e.keyCode is 13 and not e.shiftKey
       e.preventDefault() # Makes no difference
       model = new models.Point "title": @$el.find("textarea").val(), "side":@options.side
       @collection.add model
-      console.log "setting title:", model
 
   render: ->
     template = Handlebars.compile($("#input_template").html())
@@ -36,7 +34,6 @@ module.exports.InputView = Backbone.View.extend
     return @
 
   reset: ->
-    console.log "reset called"
     @$el.find("textarea").val("")
 
 module.exports.PointView = PointView = Backbone.View.extend
@@ -54,11 +51,13 @@ module.exports.PointView = PointView = Backbone.View.extend
 
 module.exports.SideView = Backbone.View.extend
   initialize : (options) ->
-    _(this).bindAll "add", "remove"
     @_pointViews = {}
+    _(this).bindAll "add", "remove"
     @collection.each @add
     @collection.bind "add", @add
     @collection.bind "remove", @remove
+    @collection.on "change:id", (model)=>
+      @add_rendered_point(model)
     @collection.on "reset", =>
       @render()
     @collection.on "sort", =>
@@ -75,14 +74,17 @@ module.exports.SideView = Backbone.View.extend
       $(@el).append pointView.render().el
     return @
 
-  add: (point) ->
-    pointview = new PointView(
+  add_rendered_point: (point)->
+    pointview = new PointView
       tagName: "li"
       model: point
-    )
+    id=point.get("id")
+    @_pointViews[id] = pointview
+    return pointview
 
-    # And add it to the collection so that it's easy to reuse.
-    @_pointViews[point.get("id")] = pointview
+  add: (point) ->
+    # Add it to the collection so that it's easy to reuse.
+    pointview= @add_rendered_point point
 
     index=@collection.indexOf(point)
 

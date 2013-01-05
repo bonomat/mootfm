@@ -102,7 +102,7 @@ AppRouter = Backbone.Router.extend
   vote: (id,point_id, amount) ->
     point = @models.cache.get parseInt point_id
     @socket.emit "vote", point, parseInt amount 
-    @navigate('/'+id);
+    @navigate('/'+id, replace: true);
 
   initialize: ->
     @connect_socket_io()

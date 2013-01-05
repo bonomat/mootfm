@@ -42,7 +42,6 @@ module.exports.Side = Backbone.Collection.extend
 
   initialize: ->
     @bind "change", =>
-      console.log "sorting", @
       @sort()
 
 module.exports.User = User = Backbone.Model.extend
