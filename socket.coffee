@@ -186,10 +186,10 @@ class exports.Server
               point.parent=parent.id
               point.vote=0
               point.side=statement_json.side
+            @dispatcher.dispatch points, callback
             point.cid=statement_json.cid if statement_json.cid
             socket.emit "statement", points
-            console.log "trying for dispatching the message"
-            @dispatcher.dispatch points, callback
+            
         ], (err) ->
           if err
             console.log "Error occured", err

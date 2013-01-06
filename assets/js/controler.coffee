@@ -164,6 +164,7 @@ AppRouter = Backbone.Router.extend
       if page.hasChanged "id"
         id= page.get "id"
         @socket.emit "get", id
+        @socket.emit "register", id
         left_points= cache.where parent: id, side: "pro"
         right_points= cache.where parent: id, side: "contra"
         @models.left_side.reset left_points
