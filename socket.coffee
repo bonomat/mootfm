@@ -164,34 +164,30 @@ class exports.Server
         console.log "Socket IO: new statement", statement_json
         async.waterfall [
           (callback)=>
-            console.log "1"
             Statement.create statement_json, callback
+
           (stmt, callback) =>
-            console.log "2"
             if statement_json.parent && statement_json.side
               Statement.get statement_json.parent, (err,parent) ->
-                if err
-                  console.log "Error occured", err
-                  return
+                return callback err if err
                 stmt.argue parent, statement_json.side, (err)->
                   callback err, stmt, parent
             else
               callback null, stmt, null
+
           (stmt, parent, callback) =>
-            console.log "3"
             stmt.get_all_points 0, (err, points) =>
-              if err
-                console.log "Error occured", err
-                return
-              if parent
-                point=points[0]
-                point.parent=parent.id
-                point.vote=0
-                point.side=statement_json.side
-                if statement_json.cid
-                  point.cid=statement_json.cid 
-              socket.emit "statement", points
-              #@dispatcher.dispatch points, callback
+              callback null, parent, points
+
+          (parent, points, callback) ->
+            if parent
+              point=points[0]
+              point.parent=parent.id
+              point.vote=0
+              point.side=statement_json.side
+            point.cid=statement_json.cid if statement_json.cid
+            socket.emit "statement", points
+            #@dispatcher.dispatch points, callback
         ], (err) ->
           if err
             console.log "Error occured", err
