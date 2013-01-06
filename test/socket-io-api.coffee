@@ -147,6 +147,8 @@ describe "Socket IO", ->
 
   it "register should be successful.", (done) ->
     ids= []
+    #fix multiple logins
+    false.should.be.ok "fix multiple logings"
     client1 = io.connect(url, options)
     client2 = io.connect(url, options)
     client1.emit "post",testState
@@ -178,3 +180,43 @@ describe "Socket IO", ->
     ], (a,b,c)->
       console.log a,b,c
       done(a,b,c)
+
+  it "register 2 people should be successful.", (done) ->
+    ids= []
+    #fix multiple logins
+    false.should.be.ok "fix multiple logings"
+    client1 = io.connect(url, options)
+    client2 = io.connect(url, options)
+    client3 = io.connect(url, options)
+    client1.emit "post",testState
+    async.waterfall [
+      (callback)->
+        client1.once "statement", (stmts)->
+          callback null, stmts
+      (stmts, callback) ->
+        callback null, stmts[0].id
+      (id, callback) ->
+        client1.emit "register", id
+        client2.emit "register", id
+        point=
+          parent: id
+          cid:"c1"
+          title: "new pro arg"
+          side: "pro"
+        client3.emit "post",point
+        callback()
+    ], (err)->
+      return done(err) if err
+          
+    async.forEach [client1,client2], (client,callback)=>
+      client.once "statement", (stmts)->
+        console.log "received:", stmts
+        stmts.should.be.an.instanceOf(Array)
+        stmts.length.should.be.equal 1, "wrong number of statements found"
+        stmts[0].should.have.property 'vote',0, "wrong number of votes for point"
+        stmts[0].should.have.property 'id'
+        stmts[0].should.not.have.property 'cid'
+        stmts[0].should.have.property 'parent',id, "wrong parent for point"
+        stmts[0].should.have.property 'side',"pro", "wrong side for point"
+        callback()
+    , done
