@@ -171,6 +171,7 @@ describe "Socket IO", ->
         stmts.length.should.be.equal 1, "wrong number of statements found"
         stmts[0].vote.should.be.equal 0, "wrong number of votes for point"
         stmts[0].should.have.property('id')
+        stmts[0].should.not.have.property('cid')
         stmts[0].parent.should.be.equal id, "wrong parent for point"
         stmts[0].side.should.be.equal "pro", "wrong side for point"
         callback()
