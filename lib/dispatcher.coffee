@@ -6,14 +6,14 @@ module.exports = class Dispatcher
 
   register: (user, page_id,callback)->
     console.log "user", user.id, "registered for", page_id
-    if page_id in @user_pages
+    if page_id of @user_pages
       @user_pages[page_id].push(user)
     else
       @user_pages[page_id]=[user]
     callback()
 
   unregister: (user, page_id,callback)->
-    if page_id in @user_pages
+    if page_id of @user_pages
       users = @user_pages[page_id]
       index = users.indexOf user
       users.splice index,1
