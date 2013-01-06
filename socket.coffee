@@ -7,8 +7,8 @@ class exports.Server
     User = require './models/user'
     flash = require 'connect-flash'
 
-    @connect = require('connect')
-    @cookie = require('cookie')
+    @connect = require 'connect'
+    @cookie = require 'cookie'
 
 
     express = require 'express'
@@ -20,6 +20,9 @@ class exports.Server
     @conf = require './lib/conf'
     Security = require('./lib/security').Security
     @app = express()
+
+    Dispatcher = require('./lib/dispatcher')
+    @dispatcher = new Dispatcher()
 
     # convert existing coffeescript, styl, and less resources to js and css for the browser
     @app.use require('connect-assets')()
@@ -145,17 +148,26 @@ class exports.Server
           return
         else
           socket.user= user
+          user.socket= socket
           console.log "A socket with sessionID " + hs.sessionID + " and username: " + user.username + " connected."
           socket.emit "loggedin", user.username
 
+      socket.on "register", (id)=>
+        @dispatcher.unregister socket.user, socket.user.page_id, (err)->
+          console.log "ERROR while unregistering page:", err
+
+        socket.user.page_id=id
+        @dispatcher.register socket.user, id, (err)->
+          console.log "ERROR while registering page:", err
+
       socket.on 'post', (statement_json) ->
         console.log "Socket IO: new statement", statement_json
-        Statement.create statement_json, (err,stmt) ->
+        Statement.create statement_json, (err,stmt) =>
           if err
             console.log "Error occured", err
             return
           async.waterfall [
-            (callback)->
+            (callback)=>
               if statement_json.parent && statement_json.side
                 Statement.get statement_json.parent, (err,parent) ->
                   if err
@@ -165,8 +177,8 @@ class exports.Server
                     callback err, parent
               else
                 callback null, null
-            (parent, callback) ->
-              stmt.get_all_points 0, (err, points) ->
+            (parent, callback) =>
+              stmt.get_all_points 0, (err, points) =>
                 if err
                   console.log "Error occured", err
                   return
@@ -178,22 +190,22 @@ class exports.Server
                   if statement_json.cid
                     point.cid=statement_json.cid 
                 socket.emit "statement", points
-                callback()
+                #@dispatcher.dispatch points, callback
           ], (err) ->
             if err
               console.log "Error occured", err
               return
 
-      socket.on 'get', (id) ->
+      socket.on 'get', (id) =>
         if not id
           console.log "No id specified for GET on Socket IO!" 
           return
 
-        Statement.get id, (err,stmt) ->
+        Statement.get id, (err,stmt) =>
           if err
             console.log "Error occured", err
             return
-          stmt.get_all_points 1, (err, points) ->
+          stmt.get_all_points 1, (err, points) =>
             if err
               console.log "Error occured", err
               return
