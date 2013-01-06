@@ -144,3 +144,36 @@ describe "Socket IO", ->
             #state.user.should.have.property('picture_url')
             client1.disconnect()
             done()
+
+  it "register should be successful.", (done) ->
+    ids= []
+    client1 = io.connect(url, options)
+    client2 = io.connect(url, options)
+    client1.emit "post",testState
+    async.waterfall [
+      (callback)->
+        client1.once "statement", (stmts)->
+          callback null, stmts
+      (stmts, callback) ->
+        callback null, stmts[0].id
+      (id, callback) ->
+        client1.emit "register", id
+        point=
+          parent: id
+          cid:"c1"
+          title: "new pro arg"
+          side: "pro"
+        client2.emit "post",point
+        client1.once "statement", (stmts)->
+          callback null, stmts,id
+      (stmts,id, callback) ->
+        stmts.should.be.an.instanceOf(Array)
+        stmts.length.should.be.equal 1, "wrong number of statements found"
+        stmts[0].vote.should.be.equal 0, "wrong number of votes for point"
+        stmts[0].should.have.property('id')
+        stmts[0].parent.should.be.equal id, "wrong parent for point"
+        stmts[0].side.should.be.equal "pro", "wrong side for point"
+        callback()
+    ], (a,b,c)->
+      console.log a,b,c
+      done(a,b,c)

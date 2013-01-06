@@ -139,7 +139,7 @@ class exports.Server
         accept null, true
 
 
-    @io.sockets.on "connection", (socket) ->
+    @io.sockets.on "connection", (socket) =>
       hs = socket.handshake
       console.log "establishing connection"
       User.get_by_username hs.user, (err, user) =>
@@ -153,14 +153,15 @@ class exports.Server
           socket.emit "loggedin", user.username
 
       socket.on "register", (id)=>
-        @dispatcher.unregister socket.user, socket.user.page_id, (err)->
-          console.log "ERROR while unregistering page:", err
+        if socket.user.page_id
+          @dispatcher.unregister socket.user, socket.user.page_id, (err)->
+            console.log "ERROR while unregistering page:", err if err
 
         socket.user.page_id=id
         @dispatcher.register socket.user, id, (err)->
-          console.log "ERROR while registering page:", err
+          console.log "ERROR while registering page:", err if err
 
-      socket.on 'post', (statement_json) ->
+      socket.on 'post', (statement_json) =>
         console.log "Socket IO: new statement", statement_json
         async.waterfall [
           (callback)=>
@@ -179,7 +180,7 @@ class exports.Server
             stmt.get_all_points 0, (err, points) =>
               callback null, parent, points
 
-          (parent, points, callback) ->
+          (parent, points, callback) =>
             if parent
               point=points[0]
               point.parent=parent.id
@@ -187,7 +188,8 @@ class exports.Server
               point.side=statement_json.side
             point.cid=statement_json.cid if statement_json.cid
             socket.emit "statement", points
-            #@dispatcher.dispatch points, callback
+            console.log "trying for dispatching the message"
+            @dispatcher.dispatch points, callback
         ], (err) ->
           if err
             console.log "Error occured", err
