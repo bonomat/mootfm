@@ -162,39 +162,40 @@ class exports.Server
 
       socket.on 'post', (statement_json) ->
         console.log "Socket IO: new statement", statement_json
-        Statement.create statement_json, (err,stmt) =>
-          if err
-            console.log "Error occured", err
-            return
-          async.waterfall [
-            (callback)=>
-              if statement_json.parent && statement_json.side
-                Statement.get statement_json.parent, (err,parent) ->
-                  if err
-                    console.log "Error occured", err
-                    return
-                  stmt.argue parent, statement_json.side, (err)->
-                    callback err, parent
-              else
-                callback null, null
-            (parent, callback) =>
-              stmt.get_all_points 0, (err, points) =>
+        async.waterfall [
+          (callback)=>
+            console.log "1"
+            Statement.create statement_json, callback
+          (stmt, callback) =>
+            console.log "2"
+            if statement_json.parent && statement_json.side
+              Statement.get statement_json.parent, (err,parent) ->
                 if err
                   console.log "Error occured", err
                   return
-                if parent
-                  point=points[0]
-                  point.parent=parent.id
-                  point.vote=0
-                  point.side=statement_json.side
-                  if statement_json.cid
-                    point.cid=statement_json.cid 
-                socket.emit "statement", points
-                #@dispatcher.dispatch points, callback
-          ], (err) ->
-            if err
-              console.log "Error occured", err
-              return
+                stmt.argue parent, statement_json.side, (err)->
+                  callback err, stmt, parent
+            else
+              callback null, stmt, null
+          (stmt, parent, callback) =>
+            console.log "3"
+            stmt.get_all_points 0, (err, points) =>
+              if err
+                console.log "Error occured", err
+                return
+              if parent
+                point=points[0]
+                point.parent=parent.id
+                point.vote=0
+                point.side=statement_json.side
+                if statement_json.cid
+                  point.cid=statement_json.cid 
+              socket.emit "statement", points
+              #@dispatcher.dispatch points, callback
+        ], (err) ->
+          if err
+            console.log "Error occured", err
+            return
 
       socket.on 'get', (id) =>
         if not id
