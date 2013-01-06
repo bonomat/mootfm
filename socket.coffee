@@ -191,24 +191,30 @@ class exports.Server
             socket.emit "statement", points
             
         ], (err) ->
-          if err
-            console.log "Error occured", err
-            return
+          return console.log "Error occured", err if err
 
       socket.on 'get', (id) =>
-        if not id
-          console.log "No id specified for GET on Socket IO!" 
-          return
-
-        Statement.get id, (err,stmt) =>
-          if err
-            console.log "Error occured", err
-            return
-          stmt.get_all_points 1, (err, points) =>
-            if err
-              console.log "Error occured", err
-              return
+        async.waterfall [
+          (callback)->
+            console.log "1a"
+            if id
+              callback()  
+            else 
+              callback "No id specified for GET on Socket IO!" 
+            console.log "1.4a"
+          (callback) ->
+            console.log "2a"
+            Statement.get id, callback
+          (stmt, callback) ->
+            console.log "3a"
+            stmt.get_all_points 1, callback
+          (points, callback) ->
+            console.log "4a"
             socket.emit "statement", points
+            callback()
+        ], (err) ->
+          console.log "5"
+          return console.log "Error occured", err if err
 
       socket.on 'vote', (stmt, amount) ->
         if not stmt or not amount
@@ -216,6 +222,7 @@ class exports.Server
           return
 
         console.log "post vote"
+
         id = stmt.parent
         point_id = stmt.id
         side = stmt.side
