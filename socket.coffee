@@ -181,16 +181,16 @@ class exports.Server
               callback null, parent, points
 
           (parent, points, callback) =>
+            point=points[0]
             if parent
-              point=points[0]
               point.parent=parent.id
               point.vote=0
               point.side=statement_json.side
-            @dispatcher.dispatch points, (err)->
-              callback err, points
-          (points, callback)->
+            @dispatcher.dispatch [point], (err)->
+              callback err, point
+          (point, callback)->
             point.cid=statement_json.cid if statement_json.cid
-            socket.emit "statement", points
+            socket.emit "statement", [point]
             callback null
             
         ], (err) ->
@@ -230,7 +230,6 @@ class exports.Server
             async.map [stmt_json.parent, stmt_json.id], (item,callback)->
               Statement.get item, callback
             , (err, [stmt, point]) ->
-              console.log "1"
               callback null, stmt, point
           (stmt, point, callback) ->
             socket.user.vote stmt, point, stmt_json.side, amount, (err, total_votes)->
