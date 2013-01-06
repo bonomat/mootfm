@@ -186,9 +186,12 @@ class exports.Server
               point.parent=parent.id
               point.vote=0
               point.side=statement_json.side
-            @dispatcher.dispatch points, callback
+            @dispatcher.dispatch points, (err)->
+              callback err, points
+          (points, callback)->
             point.cid=statement_json.cid if statement_json.cid
             socket.emit "statement", points
+            callback null
             
         ], (err) ->
           return console.log "Error occured", err if err
@@ -196,59 +199,52 @@ class exports.Server
       socket.on 'get', (id) =>
         async.waterfall [
           (callback)->
-            console.log "1a"
             if id
               callback()  
             else 
               callback "No id specified for GET on Socket IO!" 
-            console.log "1.4a"
           (callback) ->
-            console.log "2a"
             Statement.get id, callback
           (stmt, callback) ->
-            console.log "3a"
             stmt.get_all_points 1, callback
           (points, callback) ->
-            console.log "4a"
             socket.emit "statement", points
             callback()
         ], (err) ->
-          console.log "5"
           return console.log "Error occured", err if err
 
-      socket.on 'vote', (stmt, amount) ->
-        if not stmt or not amount
-          console.log "Wrong parameters for vote!" 
-          return
-
-        console.log "post vote"
-
-        id = stmt.parent
-        point_id = stmt.id
-        side = stmt.side
-        vote =amount
-        console.log id, point_id,side, vote
-        if vote!=-1 and vote!=1
-          console.log "Wrong vote amount for vote!" 
-          return 
-        console.log "param are good"
-        async.map [id, point_id], (item,callback)->
-          Statement.get item, callback
-        , (err, [stmt, point]) ->
-          if err
-            console.log "ERROR:" ,err
-            return
-          socket.user.vote stmt, point, side, vote, (err,total_votes)->
-            if err
-              console.log "ERROR:" ,err
-              return
-            point.get_all_points 0, (err, points) ->
-              if err
-                console.log "Error occured", err
-                return
-              points[0].vote=total_votes
-              points[0].parent=stmt.id
-              socket.emit "statement", points
+      socket.on 'vote', (stmt_json, amount) =>
+        async.waterfall [
+          (callback)->
+            if stmt_json and amount
+              callback()  
+            else 
+              callback "Wrong parameters for vote!" 
+            console.log "post vote"
+          (callback) ->
+            if amount!=-1 and amount!=1
+              callback "Wrong vote amount for vote!" 
+            else
+              callback()
+          (callback) ->
+            async.map [stmt_json.parent, stmt_json.id], (item,callback)->
+              Statement.get item, callback
+            , (err, [stmt, point]) ->
+              console.log "1"
+              callback null, stmt, point
+          (stmt, point, callback) ->
+            socket.user.vote stmt, point, stmt_json.side, amount, (err, total_votes)->
+              callback null, stmt, point, total_votes
+          (stmt, point, total_votes, callback) ->
+            point.get_all_points 0, (err, points)->
+              points[0].vote= total_votes
+              points[0].parent= stmt.id
+              callback null, points
+          (points, callback) => 
+            socket.emit "statement", points
+            @dispatcher.dispatch points, callback
+        ], (err) ->
+          return console.log "Error occured", err if err
 
       socket.on "disconnect", ->
         console.log "A socket with sessionID " + hs.sessionID + " disconnected."
